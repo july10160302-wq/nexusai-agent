@@ -76,5 +76,12 @@ jobs:
           path: artifacts
       - uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: |
+            artifacts/nexusai-windows/NexusAI-Setup-*.exe
+            artifacts/nexusai-windows/NexusAI-Setup-*.exe.blockmap
+            artifacts/nexusai-macos/NexusAI-*.dmg
+            artifacts/nexusai-macos/NexusAI-*.dmg.blockmap
+            artifacts/nexusai-ubuntu/NexusAI-*.AppImage
+            artifacts/nexusai-ubuntu/NexusAI-*.deb
+            artifacts/nexusai-android/app-debug.apk
           generate_release_notes: true
