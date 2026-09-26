@@ -3,4 +3,10 @@ dist
 *.log
 gh.exe
 auth.log
+release
+android/.gradle
+android/build
+android/app/build
+android/.idea
+android/local.properties
 .DS_Store

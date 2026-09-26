@@ -1,0 +1,78 @@
+name: Build NexusAI releases
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: Desktop ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            command: npm run desktop:build -- --win
+          - os: macos-latest
+            command: npm run desktop:build -- --mac
+          - os: ubuntu-latest
+            command: npm run desktop:build -- --linux
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: ${{ matrix.command }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexusai-${{ matrix.os }}
+          path: release/*
+          if-no-files-found: error
+
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: chmod +x android/gradlew && android/gradlew --project-dir android assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexusai-android
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [desktop, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
