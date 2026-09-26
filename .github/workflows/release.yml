@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            command: npm run desktop:build -- --win
+            command: npm run desktop:build -- --win --publish never
           - os: macos-latest
-            command: npm run desktop:build -- --mac
+            command: npm run desktop:build -- --mac --publish never
           - os: ubuntu-latest
-            command: npm run desktop:build -- --linux
+            command: npm run desktop:build -- --linux --publish never
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,7 +51,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
-      - run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          accept-android-sdk-licenses: true
       - run: npm ci
       - run: npm run build
       - run: npx cap add android

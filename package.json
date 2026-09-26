@@ -1,9 +1,14 @@
 {
   "name": "nexusai-agent",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "license": "MIT",
+  "description": "A local-first, Codex-inspired AI agent client for desktop and mobile.",
+  "author": {
+    "name": "NexusAI contributors",
+    "email": "july10160302-wq@users.noreply.github.com"
+  },
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
