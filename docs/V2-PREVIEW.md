@@ -1,5 +1,7 @@
 # NexusAI 0.2 preview / v2 预览
 
+Preview 3 adds a portable browser ZIP (Windows launcher included), a desktop **NexusAI → Open in browser** menu, direct-HTML startup guidance, and clearer tool adapter labels and connection entries. Browser mode is served on localhost; opening a source HTML file directly is unsupported. Keep the launcher or desktop app open while browsing. Browser and desktop storage remain separate.
+
 Preview 2 reorganizes the sidebar, adds history search and sidebar collapse, consolidates the header, moves model and reasoning controls into the composer, groups attachments and agent mode in the plus menu, and simplifies empty and message views. These controls update settings without making an inference request.
 
 This preview shares one responsive React client across web, Electron and Android.

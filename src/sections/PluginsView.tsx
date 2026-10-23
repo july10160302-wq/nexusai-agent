@@ -1,4 +1,5 @@
 import { useT } from '@/lib/i18n';
+import { useState } from 'react';
 import {
   Brain,
   FolderOpen,
@@ -31,6 +32,8 @@ const ICONS: Record<PluginIcon, React.ComponentType<{ className?: string }>> = {
 interface PluginsViewProps {
   pluginStates: PluginStates;
   setPluginStates: React.Dispatch<React.SetStateAction<PluginStates>>;
+  onSettings: () => void;
+  onDevices: () => void;
 }
 const COPY: Record<string, [string, string]> = {
   'browser-use': ['Search · Open · Read', 'Search and read public web pages through an external proxy. Network access and proxy availability are required.'],
@@ -49,8 +52,11 @@ const REQUIREMENTS: Record<string, [string, string]> = {
   'browser-use': ['依赖外部网页代理可用性', 'Requires an available external web proxy'],
 };
 
-export default function PluginsView({ pluginStates, setPluginStates }: PluginsViewProps) {
+export default function PluginsView({ pluginStates, setPluginStates, onSettings, onDevices }: PluginsViewProps) {
  const t = useT();
+  const [query, setQuery] = useState('');
+  const visiblePlugins = PLUGINS.filter(p =>
+    `${p.name} ${t(p.name)} ${p.id} ${p.tools.map(tool => tool.name).join(' ')}`.toLowerCase().includes(query.trim().toLowerCase()));
   const toggle = (id: string, enabled: boolean) =>
     setPluginStates((s) => ({ ...s, [id]: { ...s[id], enabled } }));
 
@@ -71,8 +77,15 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
           </div>
         </div>
 
+        <div className="mb-5 flex flex-wrap gap-2">
+          <button onClick={onSettings} className="rounded-full border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50">{t('连接 MCP 工具', 'Connect MCP tools')}</button>
+          <button onClick={onDevices} className="rounded-full border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50">{t('连接电脑工作区', 'Connect desktop workspace')}</button>
+        </div>
+        <Input aria-label={t('搜索插件', 'Search tools')} placeholder={t('搜索插件或工具名称…', 'Search tools or integrations…')} value={query} onChange={event => setQuery(event.target.value)} className="mb-5 border-zinc-200 bg-white" />
+        <p className="mb-4 text-xs text-zinc-500">{t('开关控制智能体调用权限，不代表服务已连接。聊天模式不会调用工具。', 'Switches allow agent access; they do not verify connectivity. Chat mode does not call tools.')}</p>
+        {!visiblePlugins.length && <p className="py-8 text-center text-sm text-zinc-500">{t('没有匹配的插件', 'No matching tools')}</p>}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {PLUGINS.map((p) => {
+          {visiblePlugins.map((p) => {
             const state = pluginStates[p.id];
             const Icon = ICONS[p.icon];
             return (
@@ -97,11 +110,12 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                       >
                         v{p.version}
                       </Badge>
-                      <Badge className="bg-emerald-50 text-[10px] text-emerald-700 hover:bg-emerald-50">{t("已预装")}</Badge>
+                      <Badge className="bg-zinc-100 text-[10px] text-zinc-600 hover:bg-zinc-100">{p.id === 'phone-use' ? t('外部网关接口', 'External gateway adapter') : t('内置工具', 'Built-in tool')}</Badge>
                     </div>
                     <div className="mt-0.5 text-xs text-zinc-500">{t(p.tagline, COPY[p.id]?.[0])}</div>
                   </div>
                   <Switch
+                    aria-label={`${t(p.name)} ${t('调用权限', 'agent access')}`}
                     checked={state?.enabled ?? false}
                     onCheckedChange={(v) => toggle(p.id, v)}
                   />

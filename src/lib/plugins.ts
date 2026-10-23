@@ -77,7 +77,7 @@ const browserUse: Plugin = {
   icon: 'globe',
   tagline: '联网搜索 · 打开网页 · 读取页面',
   description:
-    '让大模型像人一样使用浏览器：搜索互联网、在新标签页打开网址、抓取并阅读网页正文内容。',
+    '通过外部网页代理搜索和读取公开网页，也可打开网址。不支持网页自动点击或操作登录会话。',
   version: '1.2.0',
   tools: [
     {
@@ -347,7 +347,7 @@ const phoneUse: Plugin = {
   icon: 'smartphone',
   tagline: '手机状态 · 打开应用 · 发短信',
   description:
-    '通过本地手机网关（如 ADB 网关服务）控制连接的安卓手机。预配置默认网关地址，启动网关后即可用。',
+    '提供外部安卓网关的调用接口，需要另行安装兼容网关。本应用尚未内置跨应用点击、滑动、截屏和无障碍服务。',
   version: '1.0.0',
   configFields: [
     {

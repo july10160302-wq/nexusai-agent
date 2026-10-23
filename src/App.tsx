@@ -104,7 +104,7 @@ export default function App() {
       <main className="min-h-0 min-w-0 flex-1">
         {tab==='chat' && <ChatView conversation={active} onUpdate={updateConversation} onCreate={createConversation} settings={settings} setSettings={setSettings} pluginStates={pluginStates} assistant={assistant} onUpdateAssistant={updateAssistant} goSettings={()=>goTab('settings')} onToggleSidebar={toggleSidebar} onNewChat={newChat}/>}
         {tab==='devices' && <DevicesView settings={settings} setSettings={setSettings}/>}
-        {tab==='plugins' && <PluginsView pluginStates={pluginStates} setPluginStates={setPluginStates}/>}
+        {tab==='plugins' && <PluginsView pluginStates={pluginStates} setPluginStates={setPluginStates} onSettings={()=>goTab('settings')} onDevices={()=>goTab('devices')}/>}
         {tab==='assistants' && <AssistantsView assistants={assistants} setAssistants={setAssistants} activeId={assistant?.id??''} setActiveId={setActiveAssistantId}/>}
         {tab==='settings' && <SettingsView settings={settings} setSettings={setSettings} workspaceName={workspaceName} onPickWorkspace={handlePickWorkspace}/>}
       </main>

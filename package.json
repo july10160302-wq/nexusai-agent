@@ -1,7 +1,7 @@
 {
   "name": "nexusai-agent",
   "private": true,
-  "version": "0.2.0-preview.2",
+  "version": "0.2.0-preview.3",
   "type": "module",
   "license": "MIT",
   "description": "A local-first, Codex-inspired AI agent client for desktop and mobile.",
@@ -12,13 +12,14 @@
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
+    "web:start": "node web/server.cjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "desktop:dev": "npm run build && electron .",
     "desktop:build": "npm run build && electron-builder",
     "mobile:sync": "npm run build && cap sync android",
-    "test": "node --check electron/main.cjs && node --check electron/preload.cjs && node --test tests/runtime.test.cjs",
+    "test": "node --check electron/main.cjs && node --check electron/preload.cjs && node --test tests/runtime.test.cjs tests/web-server.test.cjs",
     "companion": "node companion/server.cjs"
   },
   "dependencies": {
@@ -104,7 +105,8 @@
       "dist/**/*",
       "electron/**/*",
       "package.json",
-      "companion/**/*"
+      "companion/**/*",
+      "web/server.cjs"
     ],
     "directories": {
       "output": "release"

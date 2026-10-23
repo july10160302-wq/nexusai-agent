@@ -20,6 +20,8 @@ NexusAI connects OpenAI-compatible providers to a practical agent workspace with
 
 Download the latest desktop installers and Android APK from the [Releases](https://github.com/july10160302-wq/nexusai-agent/releases) page. Release builds are produced by GitHub Actions for Windows, macOS, Linux, and Android.
 
+New builds also include a **Browser ZIP**: extract the entire ZIP, then double-click `web/Start-Browser.cmd` on Windows (no Node.js needed). Keep its window open. On macOS/Linux with Node.js 22+, run `node web/server.cjs` and open the printed address. Do not open `index.html` directly. In the desktop app, **NexusAI → Open in browser** starts a local browser server; keep the app running. Browser and desktop profiles store their settings and chats separately. Browser API access requires your provider to support CORS.
+
 ## Quick start in the browser
 
 ```bash
@@ -27,7 +29,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`, then open **Settings** and configure an OpenAI-compatible base URL, API key, and model.
+Open the URL printed by Vite (normally `http://localhost:7100`), then open **Settings** and configure an OpenAI-compatible base URL, API key, and model.
 
 ## Build locally
 
