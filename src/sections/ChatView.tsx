@@ -1,11 +1,16 @@
+import { useT } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
   Activity,
+  PanelLeft,
+  MoreHorizontal,
+  SlidersHorizontal,
+  SquarePen,
+  Plus,
   ArrowUp,
   AtSign,
-  Bot,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -32,7 +37,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import type {
   AppSettings,
   Assistant,
@@ -71,11 +75,12 @@ function extractText(node: React.ReactNode): string {
 }
 
 function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
+ const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <div className="relative my-2">
       <pre
-        className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-3 pr-10 text-[13px] leading-relaxed"
+        className="overflow-x-auto rounded-lg border border-zinc-200 bg-white p-3 pr-10 text-[13px] leading-relaxed"
         {...props}
       />
       <button
@@ -84,10 +89,10 @@ function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        className="absolute right-2 top-2 rounded bg-zinc-800 p-1 text-zinc-400 hover:text-zinc-200"
-        title="复制代码"
+        className="absolute right-2 top-2 rounded bg-zinc-100 p-1 text-zinc-600 hover:text-zinc-800"
+        title={t("复制代码")}
       >
-        {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? <Check className="h-3.5 w-3.5 text-emerald-700" /> : <Copy className="h-3.5 w-3.5" />}
       </button>
     </div>
   );
@@ -98,16 +103,16 @@ const mdComponents = {
   code: (props: React.HTMLAttributes<HTMLElement> & { className?: string }) => {
     const isBlock = /language-/.test(props.className || '');
     return isBlock ? (
-      <code className="text-emerald-300">{props.children}</code>
+      <code className="text-emerald-700">{props.children}</code>
     ) : (
-      <code className="rounded bg-zinc-800 px-1 py-0.5 text-[0.85em] text-emerald-300">
+      <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em] text-emerald-700">
         {props.children}
       </code>
     );
   },
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
-      className="text-indigo-400 underline underline-offset-2 hover:text-indigo-300"
+      className="text-zinc-700 underline underline-offset-2 hover:text-zinc-700"
       target="_blank"
       rel="noreferrer"
       {...props}
@@ -128,10 +133,10 @@ const mdComponents = {
     </div>
   ),
   th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
-    <th className="border border-zinc-700 bg-zinc-800 px-2 py-1 text-left" {...props} />
+    <th className="border border-zinc-200 bg-zinc-100 px-2 py-1 text-left" {...props} />
   ),
   td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
-    <td className="border border-zinc-700 px-2 py-1" {...props} />
+    <td className="border border-zinc-200 px-2 py-1" {...props} />
   ),
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1 className="mb-2 mt-3 text-lg font-bold" {...props} />
@@ -143,7 +148,7 @@ const mdComponents = {
     <h3 className="mb-1.5 mt-2.5 text-sm font-bold" {...props} />
   ),
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
-    <blockquote className="my-2 border-l-2 border-zinc-600 pl-3 text-zinc-400" {...props} />
+    <blockquote className="my-2 border-l-2 border-zinc-300 pl-3 text-zinc-600" {...props} />
   ),
 };
 
@@ -158,6 +163,7 @@ function Markdown({ text }: { text: string }) {
 /* ---------------- fs_write diff preview ---------------- */
 
 function WriteDiffPreview({ argsJson }: { argsJson: string }) {
+ const t = useT();
   const [diff, setDiff] = useState<(DiffLine | { type: 'gap' })[] | null>(null);
   const [isNew, setIsNew] = useState(false);
 
@@ -185,11 +191,11 @@ function WriteDiffPreview({ argsJson }: { argsJson: string }) {
 
   if (!diff) return null;
   return (
-    <div className="mb-2 max-h-48 overflow-auto rounded bg-zinc-950 p-2 font-mono text-[11px] leading-relaxed">
-      {isNew && <div className="mb-1 text-zinc-500">（新文件）</div>}
+    <div className="mb-2 max-h-48 overflow-auto rounded bg-white p-2 font-mono text-[11px] leading-relaxed">
+      {isNew && <div className="mb-1 text-zinc-500">{t("（新文件）")}</div>}
       {diff.map((l, i) =>
         l.type === 'gap' ? (
-          <div key={i} className="text-zinc-600">
+          <div key={i} className="text-zinc-500">
             ⋮
           </div>
         ) : (
@@ -197,9 +203,9 @@ function WriteDiffPreview({ argsJson }: { argsJson: string }) {
             key={i}
             className={
               l.type === 'add'
-                ? 'whitespace-pre-wrap text-emerald-400'
+                ? 'whitespace-pre-wrap text-emerald-700'
                 : l.type === 'del'
-                  ? 'whitespace-pre-wrap text-red-400 line-through'
+                  ? 'whitespace-pre-wrap text-red-700 line-through'
                   : 'whitespace-pre-wrap text-zinc-500'
             }
           >
@@ -221,6 +227,7 @@ function ToolCallCard({
   tc: ToolCallRecord;
   onResolve: (id: string, ok: boolean) => void;
 }) {
+ const t = useT();
   const [open, setOpen] = useState(false);
   let prettyArgs = tc.args;
   try {
@@ -232,29 +239,29 @@ function ToolCallCard({
     <div
       className={`my-2 overflow-hidden rounded-lg border text-[13px] ${
         tc.status === 'pending'
-          ? 'border-amber-700/60 bg-amber-950/20'
-          : 'border-zinc-800 bg-zinc-900/70'
+          ? 'border-amber-700/60 bg-amber-50'
+          : 'border-zinc-200 bg-zinc-50/70'
       }`}
     >
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-zinc-800/60"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-zinc-100/60"
       >
         {open ? (
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
         ) : (
           <ChevronRight className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
         )}
-        <Wrench className="h-3.5 w-3.5 shrink-0 text-indigo-400" />
-        <span className="font-mono text-zinc-200">{tc.name}</span>
-        <span className="hidden rounded bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-400 sm:inline">
+        <Wrench className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        <span className="font-mono text-zinc-800">{tc.name}</span>
+        <span className="hidden rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-zinc-600 sm:inline">
           {toolSourceName(tc.name)}
         </span>
         <span className="ml-auto shrink-0">
-          {tc.status === 'pending' && <ShieldQuestion className="h-3.5 w-3.5 text-amber-400" />}
-          {tc.status === 'running' && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400" />}
-          {tc.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />}
-          {tc.status === 'error' && <XCircle className="h-3.5 w-3.5 text-red-400" />}
+          {tc.status === 'pending' && <ShieldQuestion className="h-3.5 w-3.5 text-amber-700" />}
+          {tc.status === 'running' && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-700" />}
+          {tc.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />}
+          {tc.status === 'error' && <XCircle className="h-3.5 w-3.5 text-red-700" />}
           {tc.status === 'rejected' && <XCircle className="h-3.5 w-3.5 text-zinc-500" />}
         </span>
       </button>
@@ -263,40 +270,36 @@ function ToolCallCard({
         <div className="border-t border-amber-800/40 px-3 py-2">
           {tc.name === 'fs_write' && <WriteDiffPreview argsJson={tc.args} />}
           <div className="flex items-center gap-2">
-            <span className="flex-1 text-xs text-amber-200/80">此操作需要你的批准才会执行</span>
+            <span className="flex-1 text-xs text-amber-200/80">{t("此操作需要你的批准才会执行")}</span>
             <Button
               size="sm"
               className="h-7 bg-emerald-700 text-xs hover:bg-emerald-600"
               onClick={() => onResolve(tc.id, true)}
             >
-              <Check className="mr-1 h-3 w-3" />
-              批准
-            </Button>
+              <Check className="mr-1 h-3 w-3" />{t("批准")}</Button>
             <Button
               size="sm"
               variant="outline"
-              className="h-7 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
+              className="h-7 border-zinc-200 bg-transparent text-xs text-zinc-700 hover:bg-zinc-100"
               onClick={() => onResolve(tc.id, false)}
             >
-              <X className="mr-1 h-3 w-3" />
-              拒绝
-            </Button>
+              <X className="mr-1 h-3 w-3" />{t("拒绝")}</Button>
           </div>
         </div>
       )}
 
       {open && (
-        <div className="space-y-2 border-t border-zinc-800 px-3 py-2">
+        <div className="space-y-2 border-t border-zinc-200 px-3 py-2">
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">参数</div>
-            <pre className="overflow-x-auto rounded bg-zinc-950 p-2 font-mono text-xs text-zinc-300">
+            <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">{t("参数")}</div>
+            <pre className="overflow-x-auto rounded bg-white p-2 font-mono text-xs text-zinc-700">
               {prettyArgs}
             </pre>
           </div>
           {tc.result !== undefined && (
             <div>
-              <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">结果</div>
-              <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded bg-zinc-950 p-2 font-mono text-xs text-zinc-300">
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">{t("结果")}</div>
+              <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded bg-white p-2 font-mono text-xs text-zinc-700">
                 {tc.result}
               </pre>
             </div>
@@ -347,14 +350,9 @@ interface ChatViewProps {
   assistant: Assistant | null;
   onUpdateAssistant: (id: string, patch: Partial<Assistant>) => void;
   goSettings: () => void;
+  onToggleSidebar: () => void;
+  onNewChat: () => void;
 }
-
-const QUICK_PROMPTS = [
-  '帮我搜一下最近两天的 AI 行业新闻并总结',
-  '先制定一个计划，然后读取工作区根目录看看有什么文件',
-  '用代码执行算一下 100 以内的所有素数',
-  '记住我喜欢简洁的回答风格，然后告诉我现在几点',
-];
 
 export default function ChatView({
   conversation,
@@ -366,10 +364,25 @@ export default function ChatView({
   assistant,
   onUpdateAssistant,
   goSettings,
+  onToggleSidebar,
+  onNewChat,
 }: ChatViewProps) {
+ const t = useT();
   const [input, setInput] = useState('');
+  const [showModelPicker, setShowModelPicker] = useState(false);
+  const [showReasoningPicker, setShowReasoningPicker] = useState(false);
+  const [showHeaderMenu, setShowHeaderMenu] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [running, setRunning] = useState(false);
+  const [phase, setPhase] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    const started = Date.now();
+    const timer = window.setInterval(() => setElapsed((Date.now() - started) / 1000), 250);
+    return () => window.clearInterval(timer);
+  }, [running]);
   const [planOpen, setPlanOpen] = useState(true);
   const [showPluginPicker, setShowPluginPicker] = useState(false);
   const [showMention, setShowMention] = useState(false);
@@ -388,21 +401,39 @@ export default function ChatView({
   const [showActivity, setShowActivity] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
+  const runningConversationRef = useRef<string | null>(null);
   const approvalResolvers = useRef(new Map<string, (ok: boolean) => void>());
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const field = inputRef.current;
+    if (field) { field.style.height = 'auto'; field.style.height = Math.min(160, field.scrollHeight) + 'px'; }
+  }, [input]);
   const recRef = useRef<{ stop: () => void } | null>(null);
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    approvalResolvers.current.forEach(resolve => resolve(false));
+    approvalResolvers.current.clear();
+  }, []);
+  useEffect(() => {
+    if (runningConversationRef.current && runningConversationRef.current !== conversation?.id) {
+      abortRef.current?.abort();
+      approvalResolvers.current.forEach(resolve => resolve(false));
+      approvalResolvers.current.clear();
+    }
+  }, [conversation?.id]);
   const msgEls = useRef(new Map<string, HTMLDivElement>());
 
   const messages = conversation?.messages ?? [];
   const plan = conversation?.plan ?? [];
   const enabledCount = Object.values(pluginStates).filter((p) => p.enabled).length;
-  const apiReady = Boolean(settings.baseUrl && settings.apiKey && settings.model);
+  const apiReady = Boolean(settings.baseUrl && settings.model);
   const effModel = assistant?.model || settings.model;
 
   const suggestions =
     MODEL_SUGGESTIONS.find(([h]) => settings.baseUrl.includes(h))?.[1] ?? [];
-  const modelOptions = Array.from(new Set([effModel, ...suggestions].filter(Boolean)));
+  const modelOptions = Array.from(new Set([effModel, 'gpt-6.1-sol', ...suggestions].filter(Boolean)));
 
   const cmdMatches =
     input.startsWith('/') && !input.includes(' ')
@@ -476,7 +507,7 @@ export default function ChatView({
     };
     const mems = getMemories();
     const sysPrompt =
-      expandPrompt(assistant?.systemPrompt || settings.systemPrompt, effModel) +
+      expandPrompt(assistant?.systemPrompt || settings.systemPrompt, effModel) + (settings.locale === 'en' ? '\nRespond in English. Only use tools provided in this request. Never claim an action succeeded without a tool result.' : '\n使用中文回答。仅使用当前请求提供的工具，未得到工具结果时不得声称执行成功。') +
       (mems.length ? `\n\n【长期记忆】\n${mems.map((m) => `- ${m}`).join('\n')}` : '');
     return { effSettings, sysPrompt };
   }
@@ -498,46 +529,24 @@ export default function ChatView({
     }
   }
 
-  async function autoTitle(convId: string, history: ChatMessage[]) {
-    try {
-      const { effSettings } = buildAgentConfig();
-      const { content } = await chatOnce({
-        settings: effSettings,
-        messages: [
-          ...toApiMessages(history, ''),
-          {
-            role: 'user',
-            content: '请为以上对话生成一个 10 字以内的简短标题，只输出标题本身，不要标点符号。',
-          },
-        ],
-        tools: [],
-        onDelta: () => undefined,
-      });
-      const title = content.trim().replace(/["'。\n]/g, '').slice(0, 20);
-      if (title) onUpdate(convId, (c) => ({ ...c, title }));
-    } catch {
-      /* 标题生成失败无妨 */
-    }
-  }
-
   async function agentLoop(convId: string, startHistory: ChatMessage[], pluginFilter?: string[]) {
-    for (const s of settings.mcpServers.filter((x) => x.enabled)) {
-      try {
-        await refreshMcpTools(s);
-      } catch {
-        /* 服务器不可达时跳过 */
-      }
+    const signal = abortRef.current!.signal;
+    if (settings.chatMode === 'agent') {
+      setPhase(t('正在连接工具', 'Connecting tools'));
+      const results = await Promise.allSettled(settings.mcpServers.filter(s => s.enabled).map(s => refreshMcpTools(s, true, signal)));
+      signal.throwIfAborted();
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length) throw new Error(t('部分 MCP 无法连接，请检查设备或在设置中停用。', 'Some MCP servers could not connect. Check your devices or disable them in Settings.'));
     }
-
     const { effSettings, sysPrompt } = buildAgentConfig();
-    const tools = buildToolSchemas(
-      pluginStates,
-      settings.mcpServers,
-      pluginFilter?.length ? pluginFilter : assistant?.pluginIds,
-    );
+    const tools = settings.chatMode === 'agent' ? buildToolSchemas(
+      pluginStates, settings.mcpServers,
+      pluginFilter ?? (assistant?.pluginIds.length ? assistant.pluginIds : undefined),
+    ) : [];
     let history = startHistory;
 
     for (let round = 0; round < settings.maxToolRounds; round++) {
+      signal.throwIfAborted();
       const asstId = uid();
       onUpdate(convId, (c) => ({
         ...c,
@@ -551,7 +560,8 @@ export default function ChatView({
         settings: effSettings,
         messages: toApiMessages(history, sysPrompt),
         tools,
-        signal: abortRef.current?.signal,
+        signal,
+        onPhase: value => setPhase(t(({ connecting: '连接中', receiving: '接收中', reasoning: '模型正在推理', streaming: '正在回复' })[value])),
         onDelta: (t) =>
           onUpdate(convId, (c) => ({
             ...c,
@@ -581,7 +591,7 @@ export default function ChatView({
             m.id === asstId ? { ...m, toolCalls: undefined, usage } : m,
           ),
         }));
-        if (startHistory.length === 1) void autoTitle(convId, history);
+        if (startHistory.length === 1) onUpdate(convId, c => ({ ...c, title: startHistory[0].content.slice(0, 36) || c.title }));
         return;
       }
 
@@ -595,6 +605,7 @@ export default function ChatView({
       }));
 
       for (const tc of toolCalls) {
+        signal.throwIfAborted();
         let result = '';
         let status: ToolCallRecord['status'] = 'done';
         let approved = true;
@@ -613,7 +624,9 @@ export default function ChatView({
                 : m,
             ),
           }));
+          setPhase(t('等待批准', 'Waiting for approval'));
           approved = await requestApproval(tc.id);
+          signal.throwIfAborted();
         }
 
         if (!approved) {
@@ -633,6 +646,8 @@ export default function ChatView({
                 : m,
             ),
           }));
+          signal.throwIfAborted();
+          setPhase(t('正在执行工具', 'Running tool') + ': ' + tc.name);
           result =
             tc.name === 'plan_update'
               ? updatePlanFromArgs(convId, tc.args)
@@ -666,27 +681,32 @@ export default function ChatView({
         onUpdate(convId, (c) => ({ ...c, messages: [...c.messages, toolMsg] }));
       }
     }
+    throw new Error(t('已达到本轮工具次数上限，可发送消息继续。', 'Tool round limit reached. Send a message to continue.'));
   }
 
   async function runAgent(convId: string, history: ChatMessage[], pluginFilter?: string[]) {
+    runningConversationRef.current = convId;
     setRunning(true);
+    setElapsed(0);
+    setPhase(t('连接中'));
     abortRef.current = new AbortController();
     try {
       await agentLoop(convId, history, pluginFilter);
     } catch (e) {
       const msg =
         e instanceof DOMException && e.name === 'AbortError'
-          ? '⏹ 已停止生成'
+          ? t('⏹ 已停止生成', '⏹ Generation stopped')
           : `⚠️ ${e instanceof Error ? e.message : String(e)}`;
       onUpdate(convId, (c) => ({
         ...c,
-        messages: [
-          ...c.messages,
-          { id: uid(), role: 'assistant', content: msg, timestamp: Date.now() },
-        ],
+        messages: c.messages.some(m => m.role === 'assistant' && !m.content && !m.toolCalls?.length)
+          ? c.messages.map(m => m.role === 'assistant' && !m.content && !m.toolCalls?.length ? { ...m, content: msg } : m)
+          : [...c.messages, { id: uid(), role: 'assistant', content: msg, timestamp: Date.now() }],
       }));
     } finally {
+      runningConversationRef.current = null;
       setRunning(false);
+      setPhase('');
       abortRef.current = null;
       if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
         new Notification('NexusAI 任务完成', { body: '智能体已完成本轮工作' });
@@ -946,115 +966,50 @@ export default function ChatView({
   const doneCount = plan.filter((p) => p.done).length;
 
   return (
-    <div className="relative flex h-full flex-col">
-      {/* header */}
-      <div className="relative flex items-center gap-2 border-b border-zinc-800 px-3 py-3 sm:px-5">
-        {assistant ? (
-          <span className="text-base" title={assistant.name}>
-            {assistant.emoji}
-          </span>
-        ) : (
-          <Bot className="h-4 w-4 text-indigo-400" />
-        )}
-        <span className="min-w-0 truncate whitespace-nowrap text-sm font-medium text-zinc-200">
-          {conversation?.title || '新对话'}
-        </span>
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <select
-            value={effModel}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (assistant?.model) onUpdateAssistant(assistant.id, { model: v });
-              else setSettings((s) => ({ ...s, model: v }));
-            }}
-            className="max-w-28 truncate rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 outline-none sm:max-w-44"
-            title="快速切换模型"
-          >
-            {modelOptions.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-
-          {conversation && conversation.messages.length > 0 && (
-            <button
-              onClick={() => {
-                setSearchOpen(!searchOpen);
-                if (searchOpen) setSearchQuery('');
-              }}
-              className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
-              title="搜索对话内容"
-            >
-              <Search className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          {conversation && (
-            <button
-              onClick={() => setShowActivity(true)}
-              className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
-              title="活动日志"
-            >
-              <Activity className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          {conversation && (
-            <button
-              onClick={() => setShowPluginPicker(!showPluginPicker)}
-              className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
-              title="选择本对话可用的插件"
-            >
-              <Puzzle className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          <Badge variant="secondary" className="hidden bg-zinc-800 text-zinc-300 sm:inline-flex">
-            {enabledCount} 插件
-          </Badge>
-          {conversation && conversation.messages.length > 0 && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-7 w-7 text-zinc-400 hover:text-zinc-200"
-              title="导出为 Markdown"
-              onClick={exportMarkdown}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          )}
+    <div className={'nexus-chat relative flex h-full min-h-0 flex-col' + (messages.length ? '' : ' is-empty')}>
+      <div className="nexus-chat-header relative flex h-16 shrink-0 items-center gap-2 px-4">
+        <button className="nexus-icon-button" onClick={onToggleSidebar} aria-label={t('打开侧栏','Open sidebar')}><PanelLeft size={20}/></button>
+        <span className="px-2 text-lg font-semibold tracking-tight">NexusAI</span>
+        <div className="ml-auto flex items-center gap-1">
+          <button className="nexus-icon-button" onClick={onNewChat} disabled={running} aria-label={t('新建对话')}><SquarePen size={20}/></button>
+          <button className="nexus-icon-button" aria-label={t('对话选项','Chat options')} aria-expanded={showHeaderMenu} onClick={()=>setShowHeaderMenu(v=>!v)}><MoreHorizontal size={21}/></button>
         </div>
-
+        {showHeaderMenu && <>
+          <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭菜单','Close menu')} onClick={()=>setShowHeaderMenu(false)}/>
+          <div className="nexus-popover absolute right-4 top-14 z-20 w-56 p-2">
+            <button className="nexus-menu-item" disabled={!messages.length} onClick={()=>{setSearchOpen(v=>!v);setShowHeaderMenu(false)}}><Search size={16}/>{t('搜索对话内容')}</button>
+            <button className="nexus-menu-item" onClick={()=>{setShowActivity(true);setShowHeaderMenu(false)}}><Activity size={16}/>{t('活动日志')}</button>
+            <button className="nexus-menu-item" onClick={()=>{if(!conversation)onCreate();setShowPluginPicker(true);setShowHeaderMenu(false)}}><Puzzle size={16}/>{t('本对话可用插件')}<span className="ml-auto text-xs text-zinc-400">{enabledCount}</span></button>
+            <button className="nexus-menu-item" disabled={!messages.length} onClick={()=>{exportMarkdown();setShowHeaderMenu(false)}}><Download size={16}/>{t('导出为 Markdown')}</button>
+          </div>
+        </>}
         {/* plugin picker dropdown */}
         {showPluginPicker && conversation && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setShowPluginPicker(false)} />
-            <div className="absolute right-3 top-full z-20 mt-1 w-60 rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-xl">
+            <div className="absolute right-3 top-full z-20 mt-1 w-60 rounded-xl border border-zinc-200 bg-zinc-50 p-2 shadow-xl">
               <div className="mb-1 flex items-center justify-between px-2 py-1">
-                <span className="text-xs text-zinc-400">本对话可用插件</span>
+                <span className="text-xs text-zinc-600">{t("本对话可用插件")}</span>
                 <button
-                  className="text-[11px] text-indigo-400 hover:underline"
+                  className="text-[11px] text-zinc-700 hover:underline"
                   onClick={() => onUpdate(conversation.id, (c) => ({ ...c, pluginFilter: undefined }))}
-                >
-                  重置
-                </button>
+                >{t("重置")}</button>
               </div>
               {[...PLUGINS.map((p) => ({ id: p.id, name: p.name })), { id: 'mcp', name: 'MCP 服务器工具' }].map(
                 (p) => (
                   <button
                     key={p.id}
                     onClick={() => toggleConvPlugin(p.id)}
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] text-zinc-300 hover:bg-zinc-800"
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] text-zinc-700 hover:bg-zinc-100"
                   >
                     <span
                       className={`flex h-4 w-4 items-center justify-center rounded border ${
-                        pluginOn(p.id) ? 'border-indigo-500 bg-indigo-600' : 'border-zinc-600'
+                        pluginOn(p.id) ? 'border-zinc-400 bg-zinc-900' : 'border-zinc-300'
                       }`}
                     >
                       {pluginOn(p.id) && <Check className="h-3 w-3 text-white" />}
                     </span>
-                    {p.name}
+                    {t(p.name)}
                   </button>
                 ),
               )}
@@ -1065,7 +1020,7 @@ export default function ChatView({
 
       {/* search bar */}
       {searchOpen && (
-        <div className="flex items-center gap-2 border-b border-zinc-800 px-3 py-2 sm:px-5">
+        <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-2 sm:px-5">
           <Search className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
           <input
             autoFocus
@@ -1077,16 +1032,16 @@ export default function ChatView({
             onKeyDown={(e) => {
               if (e.key === 'Enter') jumpToMatch(searchIdx + (e.shiftKey ? -1 : 0));
             }}
-            placeholder="搜索对话内容，Enter 跳转…"
-            className="min-w-0 flex-1 bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-600"
+            placeholder={t("搜索对话内容，Enter 跳转…")}
+            className="min-w-0 flex-1 bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500"
           />
           <span className="shrink-0 text-xs text-zinc-500">
             {searchMatches.length ? `${Math.min(searchIdx + 1, searchMatches.length)}/${searchMatches.length}` : '0/0'}
           </span>
-          <button onClick={() => jumpToMatch(searchIdx - 1)} className="p-1 text-zinc-400 hover:text-zinc-200">
+          <button onClick={() => jumpToMatch(searchIdx - 1)} className="p-1 text-zinc-600 hover:text-zinc-800">
             <ChevronUp className="h-4 w-4" />
           </button>
-          <button onClick={() => jumpToMatch(searchIdx + 1)} className="p-1 text-zinc-400 hover:text-zinc-200">
+          <button onClick={() => jumpToMatch(searchIdx + 1)} className="p-1 text-zinc-600 hover:text-zinc-800">
             <ChevronDown className="h-4 w-4" />
           </button>
           <button
@@ -1094,7 +1049,7 @@ export default function ChatView({
               setSearchOpen(false);
               setSearchQuery('');
             }}
-            className="p-1 text-zinc-400 hover:text-zinc-200"
+            className="p-1 text-zinc-600 hover:text-zinc-800"
           >
             <X className="h-4 w-4" />
           </button>
@@ -1102,57 +1057,31 @@ export default function ChatView({
       )}
 
       {/* messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+      <div ref={scrollRef} className="nexus-messages min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8">
         {!apiReady && (
-          <div className="mx-auto mb-4 flex max-w-xl items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+          <div className="mx-auto mb-4 flex max-w-xl items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-50 px-4 py-3 text-sm text-amber-200">
             <KeyRound className="h-4 w-4 shrink-0" />
-            <span>还没有配置大模型 API。</span>
+            <span>{t("还没有配置大模型 API。")}</span>
             <Button
               size="sm"
               variant="outline"
-              className="ml-auto border-amber-700 bg-transparent text-amber-200 hover:bg-amber-900/40"
+              className="ml-auto border-amber-700 bg-transparent text-amber-200 hover:bg-amber-50"
               onClick={goSettings}
-            >
-              去设置
-            </Button>
+            >{t("去设置")}</Button>
           </div>
         )}
 
         {messages.length === 0 ? (
-          <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/20 text-3xl">
-              {assistant?.emoji ?? <Bot className="h-7 w-7 text-indigo-400" />}
-            </div>
-            <h2 className="mb-1 text-xl font-semibold text-zinc-100">
-              {assistant?.name ?? 'NexusAI 智能体'}
-            </h2>
-            <p className="mb-6 text-sm text-zinc-500">
-              工作区文件 · 工具审批 · 任务计划 · 代码执行 · MCP 生态
-            </p>
-            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-              {QUICK_PROMPTS.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => send(q)}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left text-[13px] text-zinc-300 transition hover:border-indigo-700 hover:bg-zinc-900"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-            <p className="mt-4 text-[11px] text-zinc-600">
-              输入 / 呼出快捷命令 · 点击 @ 引用工作区文件 · 支持语音输入
-            </p>
-          </div>
+          <div className="nexus-welcome mx-auto max-w-3xl text-center"><h1 className="text-[28px] font-semibold tracking-tight sm:text-[32px]">{t('今天想做些什么？')}</h1></div>
         ) : (
-          <div className="mx-auto max-w-3xl space-y-5">
+          <div className="mx-auto max-w-3xl space-y-8 pb-6">
             {visibleMessages.map((m) => (
               <div
                 key={m.id}
                 ref={(el) => {
                   if (el) msgEls.current.set(m.id, el);
                 }}
-                className={currentMatchId === m.id ? 'rounded-xl ring-2 ring-indigo-500' : ''}
+                className={currentMatchId === m.id ? 'rounded-xl ring-2 ring-zinc-400' : ''}
               >
                 {m.role === 'user' ? (
                   <div className="group flex flex-col items-end">
@@ -1163,30 +1092,26 @@ export default function ChatView({
                           value={editText}
                           onChange={(e) => setEditText(e.target.value)}
                           rows={3}
-                          className="border-indigo-700 bg-zinc-900 text-sm text-zinc-100"
+                          className="border-zinc-400 bg-zinc-50 text-sm text-zinc-900"
                         />
                         <div className="mt-1.5 flex justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
+                            className="h-7 border-zinc-200 bg-transparent text-xs text-zinc-700 hover:bg-zinc-100"
                             onClick={() => setEditingId(null)}
-                          >
-                            取消
-                          </Button>
+                          >{t("取消")}</Button>
                           <Button
                             size="sm"
-                            className="h-7 bg-indigo-600 text-xs hover:bg-indigo-500"
+                            className="h-7 bg-zinc-900 text-xs hover:bg-zinc-900"
                             onClick={() => saveEdit(m.id)}
-                          >
-                            保存并重新生成
-                          </Button>
+                          >{t("保存并重新生成")}</Button>
                         </div>
                       </div>
                     ) : (
-                      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2.5 text-sm leading-relaxed text-white sm:max-w-[80%]">
+                      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-900 px-4 py-2.5 text-sm leading-relaxed text-white sm:max-w-[80%]">
                         {m.attachments?.map((a, i) => (
-                          <img key={i} src={a.dataUrl} alt={a.name} className="mb-2 max-h-48 rounded-lg" />
+                          <img key={i} src={a.dataUrl} alt={t(a.name)} className="mb-2 max-h-48 rounded-lg" />
                         ))}
                         <span className="whitespace-pre-wrap">{m.content}</span>
                       </div>
@@ -1195,72 +1120,59 @@ export default function ChatView({
                       <div className="mt-1 flex gap-1 opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
                         <button
                           onClick={() => startEdit(m)}
-                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                          title="编辑并重新生成"
+                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                          title={t("编辑并重新生成")}
                         >
-                          <Pencil className="h-3 w-3" />
-                          编辑
-                        </button>
+                          <Pencil className="h-3 w-3" />{t("编辑")}</button>
                         <button
                           onClick={() => branchFrom(m.id)}
-                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                          title="从这里分支新对话"
+                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                          title={t("从这里分支新对话")}
                         >
-                          <GitBranch className="h-3 w-3" />
-                          分支
-                        </button>
+                          <GitBranch className="h-3 w-3" />{t("分支")}</button>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="group flex gap-3">
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-sm">
-                      {assistant?.emoji ?? <Bot className="h-4 w-4 text-indigo-400" />}
-                    </div>
-                    <div className="min-w-0 flex-1 text-sm text-zinc-200">
+                    <div className="nexus-assistant-message min-w-0 flex-1 text-[15px] leading-7 text-zinc-800">
                       {m.toolCalls?.map((tc) => (
                         <ToolCallCard key={tc.id} tc={tc} onResolve={resolveApproval} />
                       ))}
                       {m.content ? (
                         <Markdown text={m.content} />
                       ) : (
-                        !m.toolCalls?.length && <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
+                        !m.toolCalls?.length && (running && m.id === visibleMessages.at(-1)?.id ? <Loader2 className="h-4 w-4 animate-spin text-zinc-500" /> : <span className="text-zinc-500">{t('回复已中断，请重试', 'Response interrupted. Please retry.')}</span>)
                       )}
                       <div className="mt-1 flex items-center gap-2">
                         {m.usage && (
-                          <span className="text-[11px] text-zinc-600">
+                          <span className="text-[11px] text-zinc-500">
                             tokens ↑{m.usage.prompt} ↓{m.usage.completion}
                           </span>
                         )}
                         <span className="flex gap-1 opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
                           <button
                             onClick={() => copyMessage(m)}
-                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                            title="复制内容"
+                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                            title={t("复制内容")}
                           >
                             {copiedId === m.id ? (
-                              <Check className="h-3 w-3 text-emerald-400" />
+                              <Check className="h-3 w-3 text-emerald-700" />
                             ) : (
                               <Copy className="h-3 w-3" />
-                            )}
-                            复制
-                          </button>
+                            )}{t("复制")}</button>
                           <button
                             onClick={() => regenerate(m.id)}
-                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                            title="重新生成"
+                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                            title={t("重新生成")}
                           >
-                            <RotateCcw className="h-3 w-3" />
-                            重新生成
-                          </button>
+                            <RotateCcw className="h-3 w-3" />{t("重新生成")}</button>
                           <button
                             onClick={() => branchFrom(m.id)}
-                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                            title="从这里分支新对话"
+                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                            title={t("从这里分支新对话")}
                           >
-                            <GitBranch className="h-3 w-3" />
-                            分支
-                          </button>
+                            <GitBranch className="h-3 w-3" />{t("分支")}</button>
                         </span>
                       </div>
                     </div>
@@ -1274,15 +1186,14 @@ export default function ChatView({
 
       {/* plan panel */}
       {plan.length > 0 && (
-        <div className="border-t border-zinc-800 px-3 sm:px-5">
+        <div className="border-t border-zinc-200 px-3 sm:px-5">
           <div className="mx-auto max-w-3xl">
             <button
               onClick={() => setPlanOpen(!planOpen)}
-              className="flex w-full items-center gap-2 py-2 text-xs text-zinc-400 hover:text-zinc-200"
+              className="flex w-full items-center gap-2 py-2 text-xs text-zinc-600 hover:text-zinc-800"
             >
-              <ListChecks className="h-3.5 w-3.5 text-indigo-400" />
-              <span>
-                任务计划 {doneCount}/{plan.length}
+              <ListChecks className="h-3.5 w-3.5 text-zinc-700" />
+              <span>{t("任务计划")}{doneCount}/{plan.length}
               </span>
               <span className="ml-auto">
                 {planOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -1293,11 +1204,11 @@ export default function ChatView({
                 {plan.map((p) => (
                   <div key={p.id} className="flex items-center gap-2 text-[13px]">
                     {p.done ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
                     ) : (
-                      <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-zinc-600" />
+                      <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-zinc-300" />
                     )}
-                    <span className={p.done ? 'text-zinc-500 line-through' : 'text-zinc-300'}>
+                    <span className={p.done ? 'text-zinc-500 line-through' : 'text-zinc-700'}>
                       {p.text}
                     </span>
                   </div>
@@ -1310,7 +1221,7 @@ export default function ChatView({
 
       {/* input */}
       <div
-        className={`border-t px-3 py-3 sm:px-5 ${isDragging ? 'border-indigo-500 bg-indigo-950/20' : 'border-zinc-800'}`}
+        className={`nexus-composer border-t px-3 py-3 sm:px-5 ${isDragging ? 'border-zinc-400 bg-zinc-100/20' : 'border-zinc-200'}`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -1321,14 +1232,14 @@ export default function ChatView({
         <div className="relative mx-auto max-w-3xl">
           {/* slash command palette */}
           {cmdMatches.length > 0 && (
-            <div className="absolute bottom-full mb-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 p-1.5 shadow-xl">
+            <div className="absolute bottom-full mb-2 w-full rounded-xl border border-zinc-200 bg-zinc-50 p-1.5 shadow-xl">
               {cmdMatches.map((c) => (
                 <button
                   key={c.cmd}
                   onClick={() => runCommand(c.cmd)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-zinc-800"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-zinc-100"
                 >
-                  <span className="font-mono text-sm text-indigo-400">{c.cmd}</span>
+                  <span className="font-mono text-sm text-zinc-700">{c.cmd}</span>
                   <span className="text-xs text-zinc-500">{c.desc}</span>
                 </button>
               ))}
@@ -1339,18 +1250,18 @@ export default function ChatView({
           {showMention && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMention(false)} />
-              <div className="absolute bottom-full z-20 mb-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-xl">
+              <div className="absolute bottom-full z-20 mb-2 w-full rounded-xl border border-zinc-200 bg-zinc-50 p-2 shadow-xl">
                 <Input
                   autoFocus
                   value={mentionFilter}
                   onChange={(e) => setMentionFilter(e.target.value)}
-                  placeholder="搜索工作区文件…"
-                  className="mb-1.5 h-8 border-zinc-800 bg-zinc-950 text-xs text-zinc-100"
+                  placeholder={t("搜索工作区文件…")}
+                  className="mb-1.5 h-8 border-zinc-200 bg-white text-xs text-zinc-900"
                 />
                 <div className="max-h-48 overflow-y-auto">
-                  {mentionError && <p className="px-2 py-1.5 text-xs text-amber-400">{mentionError}</p>}
+                  {mentionError && <p className="px-2 py-1.5 text-xs text-amber-700">{mentionError}</p>}
                   {mentionFiles === null && !mentionError && (
-                    <p className="px-2 py-1.5 text-xs text-zinc-500">加载中…</p>
+                    <p className="px-2 py-1.5 text-xs text-zinc-500">{t("加载中…")}</p>
                   )}
                   {mentionFiles
                     ?.filter((f) => f.toLowerCase().includes(mentionFilter.toLowerCase()))
@@ -1359,13 +1270,13 @@ export default function ChatView({
                       <button
                         key={f}
                         onClick={() => pickMention(f)}
-                        className="block w-full truncate rounded-lg px-2 py-1.5 text-left font-mono text-xs text-zinc-300 hover:bg-zinc-800"
+                        className="block w-full truncate rounded-lg px-2 py-1.5 text-left font-mono text-xs text-zinc-700 hover:bg-zinc-100"
                       >
                         {f}
                       </button>
                     ))}
                   {mentionFiles?.length === 0 && (
-                    <p className="px-2 py-1.5 text-xs text-zinc-500">工作区暂无文件</p>
+                    <p className="px-2 py-1.5 text-xs text-zinc-500">{t("工作区暂无文件")}</p>
                   )}
                 </div>
               </div>
@@ -1376,10 +1287,10 @@ export default function ChatView({
             <div className="mb-2 flex flex-wrap gap-2">
               {attachments.map((a, i) => (
                 <div key={i} className="relative">
-                  <img src={a.dataUrl} alt={a.name} className="h-14 rounded-lg border border-zinc-700" />
+                  <img src={a.dataUrl} alt={t(a.name)} className="h-14 rounded-lg border border-zinc-200" />
                   <button
                     onClick={() => setAttachments((list) => list.filter((_, j) => j !== i))}
-                    className="absolute -right-1.5 -top-1.5 rounded-full bg-zinc-700 p-0.5 text-zinc-300 hover:bg-red-600"
+                    className="absolute -right-1.5 -top-1.5 rounded-full bg-zinc-200 p-0.5 text-zinc-700 hover:bg-red-600"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -1390,38 +1301,46 @@ export default function ChatView({
 
           <div className="flex items-end gap-1.5 sm:gap-2">
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickImage} />
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-              title="添加图片（需要视觉模型）"
-              onClick={() => fileRef.current?.click()}
-            >
-              <ImagePlus className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-              title="引用工作区文件"
-              onClick={openMention}
-            >
-              <AtSign className="h-4 w-4" />
-            </Button>
-            {VOICE_SUPPORTED && (
-              <Button
-                size="icon"
-                variant="outline"
-                className={`h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 hover:bg-zinc-800 ${
-                  recording ? 'animate-pulse text-red-400' : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-                title={recording ? '停止语音输入' : '语音输入'}
-                onClick={toggleVoice}
-              >
-                <Mic className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="relative">
+              <button className="nexus-icon-button" aria-label={t('添加附件与工具','Add attachments & tools')} aria-expanded={showAttachMenu} onClick={()=>setShowAttachMenu(v=>!v)}><Plus size={22}/></button>
+              {showAttachMenu && <>
+                <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭菜单','Close menu')} onClick={()=>setShowAttachMenu(false)}/>
+                <div className="nexus-popover absolute bottom-full left-0 z-20 mb-3 w-60 p-2">
+                  <button className="nexus-menu-item" onClick={()=>{setShowAttachMenu(false);fileRef.current?.click()}}><ImagePlus size={17}/>{t('添加图片','Attach image')}</button>
+                  <button className="nexus-menu-item" onClick={()=>{setShowAttachMenu(false);void openMention()}}><AtSign size={17}/>{t('引用工作区文件')}</button>
+                  <button className="nexus-menu-item" onClick={()=>{setShowAttachMenu(false);if(!conversation)onCreate();setShowPluginPicker(true)}}><Puzzle size={17}/>{t('本对话可用插件')}</button>
+            <div className="flex items-center justify-between gap-2 border-t border-zinc-100 px-3 py-3 text-sm text-zinc-600"><Wrench size={14}/><select aria-label={t('对话模式','Chat mode')} value={settings.chatMode} disabled={running} className="max-w-24 bg-transparent outline-none" onChange={e=>setSettings(v=>({...v,chatMode:e.target.value as 'chat'|'agent'}))}><option value="chat">{t('聊天')}</option><option value="agent">{t('智能体')}</option></select></div>
+                </div>
+              </>}
+            </div>
+        <div className="relative">
+          <button className="nexus-composer-control" disabled={running} aria-label={t('选择模型','Choose model')} aria-expanded={showModelPicker} onClick={()=>setShowModelPicker(v=>!v)} title={effModel}><span className="max-w-[105px] truncate">{effModel}</span><ChevronDown size={16} className="text-zinc-400"/></button>
+          {showModelPicker && <>
+            <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭模型菜单','Close model menu')} onClick={()=>setShowModelPicker(false)}/>
+            <div className="nexus-model-popover nexus-popover absolute left-0 bottom-full z-20 mb-3 w-72 space-y-3 p-4">
+              <label className="block text-xs font-medium text-zinc-500">{t('模型名称')}<input autoFocus aria-label={t('模型名称')} className="nexus-input mt-2 text-sm" list="nexus-model-options" value={effModel} disabled={running} onChange={e=>{if(assistant?.model)onUpdateAssistant(assistant.id,{model:e.target.value});else setSettings(v=>({...v,model:e.target.value}))}}/></label>
+              <datalist id="nexus-model-options">{modelOptions.map(m=><option key={m} value={m}/>)}</datalist>
+              <div className="max-h-48 overflow-y-auto">{modelOptions.map(m=><button key={m} disabled={running} className="nexus-menu-item" onClick={()=>{if(assistant?.model)onUpdateAssistant(assistant.id,{model:m});else setSettings(v=>({...v,model:m}));setShowModelPicker(false)}}><span className="min-w-0 flex-1 truncate">{m}</span>{m===effModel&&<Check size={16}/>}</button>)}</div>
+              <button className="w-full border-t border-zinc-100 pt-3 text-left text-xs text-zinc-500" onClick={goSettings}>{t('管理 API 与模型','Manage API & models')}</button>
+            </div>
+          </>}
+        </div>
+            <div className="relative">
+              <button className="nexus-composer-control" disabled={running} aria-label={t('推理强度','Reasoning effort')} aria-expanded={showReasoningPicker} onClick={()=>{setShowReasoningPicker(v=>!v);setShowModelPicker(false)}}><SlidersHorizontal size={15}/><span>{settings.reasoningEffort==='off' ? t('思考','Think') : t(({off:'默认',minimal:'极简',low:'低',medium:'中',high:'高'})[settings.reasoningEffort])}</span><ChevronDown size={12}/></button>
+              {showReasoningPicker && <>
+                <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭强度菜单','Close effort menu')} onClick={()=>setShowReasoningPicker(false)}/>
+                <div className="nexus-popover absolute bottom-full right-0 z-20 mb-3 w-56 p-2" role="menu" aria-label={t('推理强度','Reasoning effort')}>
+                  <p className="px-3 py-2 text-xs text-zinc-400">{t('推理强度 · 仅限支持的模型','Reasoning effort · Supported models only')}</p>
+                  {([['off','默认','Default'],['minimal','极简','Minimal'],['low','低','Low'],['medium','中','Medium'],['high','高','High']] as const).map(([value,zh,en])=><button key={value} className="nexus-menu-item" role="menuitemradio" aria-checked={settings.reasoningEffort===value} onClick={()=>{setSettings(v=>({...v,reasoningEffort:value}));setShowReasoningPicker(false)}}><span className="flex-1">{t(zh,en)}</span>{settings.reasoningEffort===value&&<Check size={15}/>}</button>)}
+                </div>
+              </>}
+            </div>
+
+            <div className="flex-1"/>
             <Textarea
+              ref={inputRef}
+              aria-label={t('消息','Message')}
+              enterKeyHint="send"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -1438,16 +1357,29 @@ export default function ChatView({
                   send();
                 }
               }}
-              placeholder={recording ? '正在聆听…' : '输入消息，/ 快捷命令，Enter 发送…'}
-              className="max-h-40 min-h-[44px] flex-1 resize-none border-zinc-800 bg-zinc-900 text-sm text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-indigo-600"
+              placeholder={recording ? t('正在聆听…') : t('向 NexusAI 提问','Message NexusAI')}
+              className="max-h-40 min-h-[44px] flex-1 resize-none border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:ring-zinc-400"
               rows={1}
             />
+            {VOICE_SUPPORTED && (
+              <Button
+                size="icon"
+                variant="outline"
+                className={`h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 hover:bg-zinc-100 ${
+                  recording ? 'animate-pulse text-red-700' : 'text-zinc-600 hover:text-zinc-800'
+                }`}
+                title={t(recording ? '停止语音输入' : '语音输入')}
+                onClick={toggleVoice}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
             {running ? (
               <Button
                 size="icon"
                 variant="outline"
-                className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-red-400 hover:bg-zinc-800"
-                title="停止（Esc）"
+                className="h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 text-red-700 hover:bg-zinc-100"
+                title={t("停止（Esc）")}
                 onClick={stop}
               >
                 <CircleStop className="h-4 w-4" />
@@ -1455,7 +1387,8 @@ export default function ChatView({
             ) : (
               <Button
                 size="icon"
-                className="h-11 w-11 shrink-0 bg-indigo-600 hover:bg-indigo-500"
+                className="h-11 w-11 shrink-0 bg-zinc-900 hover:bg-zinc-900"
+                aria-label={t('发送消息', 'Send message')}
                 onClick={() => send()}
                 disabled={!input.trim() && !attachments.length}
               >
@@ -1463,13 +1396,8 @@ export default function ChatView({
               </Button>
             )}
           </div>
-          <p className="mt-2 text-center text-[11px] text-zinc-600">
-            {lastUsage
-              ? `上下文 ↑${lastUsage.prompt} ↓${lastUsage.completion} tokens · `
-              : ''}
-            工具调用在本地执行 · 写操作需批准后执行
-          </p>
         </div>
+        <p role="status" className="mx-auto mt-3 max-w-3xl text-center text-[11px] text-zinc-400">{running ? phase+' · '+elapsed.toFixed(1)+'s' : t('重要结果请核实，工具操作请先审阅。','Verify important results and review tool actions.')}{lastUsage && !running ? ' · ↑'+lastUsage.prompt+' ↓'+lastUsage.completion : ''}</p>
       </div>
 
       {/* activity drawer */}
@@ -1479,13 +1407,13 @@ export default function ChatView({
             className="fixed inset-0 z-20 bg-black/40 md:hidden"
             onClick={() => setShowActivity(false)}
           />
-          <div className="absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl">
-            <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
-              <Activity className="h-4 w-4 text-indigo-400" />
-              <span className="text-sm font-medium text-zinc-200">活动日志</span>
-              <span className="text-xs text-zinc-500">{activityEvents.length} 次工具调用</span>
+          <div className="absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-zinc-200 bg-white shadow-2xl">
+            <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3">
+              <Activity className="h-4 w-4 text-zinc-700" />
+              <span className="text-sm font-medium text-zinc-800">{t("活动日志")}</span>
+              <span className="text-xs text-zinc-500">{activityEvents.length}{t("次工具调用")}</span>
               <button
-                className="ml-auto text-zinc-500 hover:text-zinc-300"
+                className="ml-auto text-zinc-500 hover:text-zinc-700"
                 onClick={() => setShowActivity(false)}
               >
                 <X className="h-4 w-4" />
@@ -1493,9 +1421,7 @@ export default function ChatView({
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {activityEvents.length === 0 ? (
-                <p className="px-2 py-6 text-center text-xs text-zinc-600">
-                  本轮还没有工具活动
-                </p>
+                <p className="px-2 py-6 text-center text-xs text-zinc-500">{t("本轮还没有工具活动")}</p>
               ) : (
                 <div className="space-y-2">
                   {activityEvents.map((ev) => (
@@ -1504,23 +1430,23 @@ export default function ChatView({
                       onClick={() =>
                         msgEls.current.get(ev.msgId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                       }
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 p-2.5 text-left transition hover:border-zinc-600"
+                      className="w-full rounded-lg border border-zinc-200 bg-zinc-50/60 p-2.5 text-left transition hover:border-zinc-300"
                     >
                       <div className="flex items-center gap-2">
                         {ev.status === 'done' ? (
-                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
                         ) : ev.status === 'error' ? (
-                          <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                          <XCircle className="h-3.5 w-3.5 shrink-0 text-red-700" />
                         ) : ev.status === 'rejected' ? (
                           <XCircle className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                         ) : (
-                          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-amber-400" />
+                          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-amber-700" />
                         )}
-                        <span className="font-mono text-xs text-zinc-200">{ev.name}</span>
-                        <span className="rounded bg-zinc-800 px-1 py-0.5 text-[10px] text-zinc-500">
+                        <span className="font-mono text-xs text-zinc-800">{ev.name}</span>
+                        <span className="rounded bg-zinc-100 px-1 py-0.5 text-[10px] text-zinc-500">
                           {toolSourceName(ev.name)}
                         </span>
-                        <span className="ml-auto shrink-0 text-[10px] text-zinc-600">
+                        <span className="ml-auto shrink-0 text-[10px] text-zinc-500">
                           {new Date(ev.ts).toLocaleTimeString('zh-CN', { hour12: false })}
                         </span>
                       </div>

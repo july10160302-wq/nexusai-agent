@@ -10,3 +10,6 @@ android/app/build
 android/.idea
 android/local.properties
 .DS_Store
+.nexus-test-*
+.runtime
+.test-output

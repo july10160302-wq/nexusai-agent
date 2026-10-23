@@ -1,12 +1,18 @@
 <!doctype html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI 智能体客户端</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>NexusAI</title>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if (location.protocol === 'file:' && !navigator.userAgent.includes('Electron/')) {
+        document.getElementById('root').innerHTML = '<main style="font:16px/1.8 system-ui;max-width:650px;margin:12vh auto;padding:24px;color:#18181b"><h1>NexusAI</h1><p>请通过启动器打开网页版，不要直接打开 HTML 源文件。</p><p>下载版：解压完整 ZIP，双击 <b>web/Start-Browser.cmd</b>。桌面版：打开 NexusAI 软件。</p><p>开发版：启动 npm run dev，然后访问 <a href="http://localhost:7100/">http://localhost:7100/</a>。</p><p>Use web/Start-Browser.cmd from the extracted browser ZIP, or launch the desktop app. Opening this HTML file directly is unsupported.</p></main>';
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

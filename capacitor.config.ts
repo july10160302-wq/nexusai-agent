@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'NexusAI',
   webDir: 'dist',
   bundledWebRuntime: false,
-  server: { androidScheme: 'https' },
+  // LAN desktop pairing needs HTTP; production remote services should use HTTPS.
+  server: { androidScheme: 'http', cleartext: true },
 };
 
 export default config;

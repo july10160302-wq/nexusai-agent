@@ -10,6 +10,29 @@ permissions:
   contents: write
 
 jobs:
+  browser:
+    name: Browser ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Package portable browser edition
+        run: |
+          mkdir -p release
+          version=$(node -p "require('./package.json').version")
+          python3 -m zipfile -c "release/NexusAI-Browser-${version}.zip" dist web
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexusai-browser
+          path: release/NexusAI-Browser-*.zip
+          if-no-files-found: error
+
   desktop:
     name: Desktop ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -30,11 +53,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: ${{ matrix.command }}
       - uses: actions/upload-artifact@v4
         with:
           name: nexusai-${{ matrix.os }}
-          path: release/*
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/*.dmg
+            release/*.AppImage
+            release/*.deb
           if-no-files-found: error
 
   android:
@@ -55,8 +84,10 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
           accept-android-sdk-licenses: true
       - run: npm ci
+      - run: npm test
       - run: npm run build
       - run: npx cap add android
+      - run: node scripts/configure-android.cjs
       - run: npx cap sync android
       - run: chmod +x android/gradlew && android/gradlew --project-dir android assembleDebug
       - uses: actions/upload-artifact@v4
@@ -68,7 +99,7 @@ jobs:
   release:
     name: Publish GitHub release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [desktop, android]
+    needs: [desktop, android, browser]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -76,6 +107,7 @@ jobs:
           path: artifacts
       - uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ contains(github.ref_name, 'preview') }}
           files: |
             artifacts/nexusai-windows-latest/NexusAI-Setup-*.exe
             artifacts/nexusai-windows-latest/NexusAI-Setup-*.exe.blockmap
@@ -84,4 +116,5 @@ jobs:
             artifacts/nexusai-ubuntu-latest/NexusAI-*.AppImage
             artifacts/nexusai-ubuntu-latest/NexusAI-*.deb
             artifacts/nexusai-android/app-debug.apk
+            artifacts/nexusai-browser/NexusAI-Browser-*.zip
           generate_release_notes: true

@@ -77,7 +77,7 @@ const browserUse: Plugin = {
   icon: 'globe',
   tagline: '联网搜索 · 打开网页 · 读取页面',
   description:
-    '让大模型像人一样使用浏览器：搜索互联网、在新标签页打开网址、抓取并阅读网页正文内容。',
+    '通过外部网页代理搜索和读取公开网页，也可打开网址。不支持网页自动点击或操作登录会话。',
   version: '1.2.0',
   tools: [
     {
@@ -238,7 +238,7 @@ const computerUse: Plugin = {
   icon: 'monitor',
   tagline: '通知 · 剪贴板 · 保存文件 · 系统信息',
   description:
-    '让大模型操作这台电脑：弹系统通知、读写剪贴板、把内容保存为本地文件、读取屏幕与系统信息。',
+    '提供浏览器允许的通知、剪贴板、文件下载和系统信息，不提供操作系统屏幕点击。',
   version: '1.1.0',
   tools: [
     {
@@ -347,7 +347,7 @@ const phoneUse: Plugin = {
   icon: 'smartphone',
   tagline: '手机状态 · 打开应用 · 发短信',
   description:
-    '通过本地手机网关（如 ADB 网关服务）控制连接的安卓手机。预配置默认网关地址，启动网关后即可用。',
+    '提供外部安卓网关的调用接口，需要另行安装兼容网关。本应用尚未内置跨应用点击、滑动、截屏和无障碍服务。',
   version: '1.0.0',
   configFields: [
     {
@@ -574,7 +574,7 @@ const codeRunner: Plugin = {
   icon: 'terminal',
   tagline: 'JavaScript 沙盒 · 即时运行',
   description:
-    '对标 Codex 的终端：在独立的 Web Worker 沙盒中运行 JavaScript 代码并返回输出，适合数据处理、算法验证、格式转换。5 秒超时保护。',
+    '在独立 Web Worker 中运行 JavaScript，用于数据处理、算法验证和格式转换，5 秒超时。不提供电脑终端。',
   version: '1.0.0',
   tools: [
     {
@@ -694,7 +694,7 @@ export function buildToolSchemas(
   mcpServers: McpServer[] = [],
   filter?: string[],
 ) {
-  const allow = (id: string) => !filter || filter.length === 0 || filter.includes(id);
+  const allow = (id: string) => !filter || filter.includes(id);
   const builtin = PLUGINS.filter((p) => states[p.id]?.enabled && allow(p.id)).flatMap((p) =>
     p.tools.map((t) => ({
       type: 'function' as const,

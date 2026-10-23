@@ -18,6 +18,8 @@ NexusAI 将 OpenAI 兼容接口接入一个可实际工作的智能体工作区�
 
 前往 [Releases](https://github.com/july10160302-wq/nexusai-agent/releases) 下载 Windows、macOS、Linux 安装包和 Android APK。发布包由 GitHub Actions 自动构建。
 
+新版构建另含 **Browser 网页版 ZIP**：完整解压后，Windows 双击 `web/Start-Browser.cmd` 即可，不需要安装 Node.js；使用时保持启动窗口打开。macOS/Linux 安装 Node.js 22+ 后运行 `node web/server.cjs`，访问终端显示的地址。不要双击 `index.html`。桌面软件的 **NexusAI → 在浏览器打开** 菜单也可启动网页版，使用时保持软件运行。网页与桌面软件分别保存设置和聊天；网页版还需要 API 服务商允许浏览器跨域请求（CORS）。
+
 ## 浏览器开发
 
 ```bash
@@ -25,7 +27,7 @@ npm install
 npm run dev
 ```
 
-打开 `http://localhost:3000`，进入「设置」，填写 OpenAI 兼容接口地址、API Key 和模型。
+打开 Vite 显示的地址（通常为 `http://localhost:7100`），进入「设置」，填写 OpenAI 兼容接口地址、API Key 和模型。
 
 ## 本地构建
 

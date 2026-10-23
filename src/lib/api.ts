@@ -1,3 +1,4 @@
+import { readEvents } from './stream';
 import type { AppSettings, ChatMessage, TokenUsage } from '@/types';
 
 export interface ApiToolCall {
@@ -9,6 +10,16 @@ export interface ApiToolCall {
 interface ToolSchema {
   type: 'function';
   function: { name: string; description: string; parameters: unknown };
+}
+interface CompletionChunk {
+  error?: { message?: string };
+  choices?: { finish_reason?: string | null; delta?: CompletionDelta; message?: CompletionDelta }[];
+  usage?: { prompt_tokens?: number; completion_tokens?: number };
+}
+interface CompletionDelta {
+  content?: string | null;
+  reasoning_content?: string;
+  tool_calls?: { index?: number; id?: string; function?: { name?: string; arguments?: string } }[];
 }
 
 const normBase = (u: string) => u.trim().replace(/\/+$/, '');
@@ -58,6 +69,7 @@ export async function chatOnce(opts: {
   tools: ToolSchema[];
   onDelta: (text: string) => void;
   signal?: AbortSignal;
+  onPhase?: (phase: 'connecting' | 'receiving' | 'reasoning' | 'streaming') => void;
 }): Promise<{ content: string; toolCalls: ApiToolCall[]; usage?: TokenUsage }> {
   const { settings, messages, tools, onDelta, signal } = opts;
   const body: Record<string, unknown> = {
@@ -75,6 +87,9 @@ export async function chatOnce(opts: {
     body.tool_choice = 'auto';
   }
 
+  opts.onPhase?.('connecting');
+  const timeout = AbortSignal.timeout((settings.requestTimeout || 120) * 1000);
+  const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
   const res = await fetch(`${normBase(settings.baseUrl)}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -82,7 +97,7 @@ export async function chatOnce(opts: {
       Authorization: `Bearer ${settings.apiKey}`,
     },
     body: JSON.stringify(body),
-    signal,
+    signal: requestSignal,
   });
 
   if (!res.ok) {
@@ -91,52 +106,46 @@ export async function chatOnce(opts: {
   }
   if (!res.body) throw new Error('响应没有内容流');
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
+  opts.onPhase?.('receiving');
   let content = '';
   let usage: TokenUsage | undefined;
   const tcMap = new Map<number, ApiToolCall>();
-
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
-    for (const line of lines) {
-      const t = line.trim();
-      if (!t.startsWith('data:')) continue;
-      const data = t.slice(5).trim();
-      if (!data || data === '[DONE]') continue;
-      try {
-        const json = JSON.parse(data);
-        const delta = json.choices?.[0]?.delta;
-        if (delta?.content) {
-          content += delta.content;
-          onDelta(delta.content);
-        }
-        if (Array.isArray(delta?.tool_calls)) {
-          for (const tc of delta.tool_calls) {
-            const idx = typeof tc.index === 'number' ? tc.index : 0;
-            const cur = tcMap.get(idx) ?? { id: '', name: '', args: '' };
-            if (tc.id) cur.id = tc.id;
-            if (tc.function?.name) cur.name += tc.function.name;
-            if (tc.function?.arguments) cur.args += tc.function.arguments;
-            tcMap.set(idx, cur);
-          }
-        }
-        if (json.usage) {
-          usage = {
-            prompt: json.usage.prompt_tokens ?? 0,
-            completion: json.usage.completion_tokens ?? 0,
-          };
-        }
-      } catch {
-        // 忽略不完整的 JSON 片段
+  let terminal = false;
+  // JSON fallback for compatible providers that ignore stream:true.
+  const consume = (json: CompletionChunk) => {
+    if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+    const choice = json.choices?.[0];
+    const delta = choice?.delta || choice?.message;
+    if (delta?.reasoning_content) opts.onPhase?.('reasoning');
+    if (typeof delta?.content === 'string' && delta.content) {
+      content += delta.content;
+      opts.onPhase?.('streaming');
+      onDelta(delta.content);
+    }
+    if (Array.isArray(delta?.tool_calls)) {
+      for (const [i, tc] of delta.tool_calls.entries()) {
+        const idx = typeof tc.index === 'number' ? tc.index : i;
+        const cur = tcMap.get(idx) ?? { id: '', name: '', args: '' };
+        if (tc.id) cur.id = tc.id;
+        if (tc.function?.name) cur.name += tc.function.name;
+        if (tc.function?.arguments) cur.args += tc.function.arguments;
+        tcMap.set(idx, cur);
       }
     }
+    if (choice?.finish_reason) terminal = true;
+    if (json.usage) usage = { prompt: json.usage.prompt_tokens ?? 0, completion: json.usage.completion_tokens ?? 0 };
+  };
+  if (res.headers.get('content-type')?.includes('application/json')) {
+    consume(await res.json());
+    terminal = true;
+  } else {
+    await readEvents(res.body, (data) => {
+      if (data.trim() === '[DONE]') { terminal = true; return true; }
+      consume(JSON.parse(data));
+    });
   }
+  if (!terminal) throw new Error('Response interrupted before completion. Please retry.');
+  if (!content && !tcMap.size) throw new Error('The provider returned no text or tool calls. Check model and API compatibility.');
 
   const toolCalls = Array.from(tcMap.values()).map((tc, i) => ({
     ...tc,
@@ -146,14 +155,19 @@ export async function chatOnce(opts: {
 }
 
 export async function testConnection(settings: AppSettings): Promise<string> {
-  const res = await fetch(`${normBase(settings.baseUrl)}/models`, {
-    headers: { Authorization: `Bearer ${settings.apiKey}` },
+  const started = performance.now();
+  const result = await chatOnce({
+    settings: { ...settings, reasoningEffort: 'off', requestTimeout: 30 },
+    messages: [{ role: 'user', content: 'Reply with OK.' }], tools: [], onDelta: () => undefined,
   });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`HTTP ${res.status}：${text.slice(0, 200)}`);
-  }
-  const json = await res.json().catch(() => null);
-  const n = Array.isArray(json?.data) ? json.data.length : 0;
-  return n ? `连接成功，共 ${n} 个可用模型` : '连接成功';
+  return ((performance.now() - started) / 1000).toFixed(1) + 's · ' + result.content.slice(0, 100);
+}
+
+export async function listModels(settings: AppSettings): Promise<string[]> {
+  const res = await fetch(normBase(settings.baseUrl) + '/models', {
+    headers: { Authorization: 'Bearer ' + settings.apiKey }, signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  return (json.data || []).map((m: { id: string }) => m.id).sort();
 }
