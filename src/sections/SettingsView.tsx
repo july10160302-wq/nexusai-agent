@@ -1,3 +1,4 @@
+import { useT } from '@/lib/i18n';
 import { useState } from 'react';
 import {
   CheckCircle2,
@@ -19,7 +20,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { AppSettings, ApprovalMode, McpServer } from '@/types';
-import { testConnection } from '@/lib/api';
+import { testConnection, listModels } from '@/lib/api';
 import { refreshMcpTools } from '@/lib/mcp';
 import { uid } from '@/lib/store';
 
@@ -51,7 +52,10 @@ export default function SettingsView({
   workspaceName,
   onPickWorkspace,
 }: SettingsViewProps) {
+ const t = useT();
   const [testing, setTesting] = useState(false);
+  const [models, setModels] = useState<string[]>([]);
+  const [modelsBusy, setModelsBusy] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [wsError, setWsError] = useState('');
   const [mcpName, setMcpName] = useState('');
@@ -122,20 +126,20 @@ export default function SettingsView({
         <div className="flex items-center gap-3">
           <Settings2 className="h-5 w-5 text-indigo-400" />
           <div>
-            <h1 className="text-lg font-semibold text-zinc-100">设置</h1>
-            <p className="text-sm text-zinc-500">模型 API、审批模式、工作区与 MCP 服务器</p>
+            <h1 className="text-lg font-semibold text-zinc-100">{t("设置")}</h1>
+            <p className="text-sm text-zinc-500">{t("模型 API、审批模式、工作区与 MCP 服务器")}</p>
           </div>
         </div>
 
         {/* API */}
         <section className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="text-sm font-semibold text-zinc-200">模型 API</h2>
+          <h2 className="text-sm font-semibold text-zinc-200">{t("模型 API")}</h2>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => {
               const active = settings.baseUrl === p.baseUrl;
               return (
                 <button
-                  key={p.name}
+                  key={t(p.name)}
                   onClick={() => patch({ baseUrl: p.baseUrl, model: p.model })}
                   className={`rounded-lg border px-3 py-1.5 text-[13px] transition ${
                     active
@@ -143,13 +147,13 @@ export default function SettingsView({
                       : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-600'
                   }`}
                 >
-                  {p.name}
+                  {t(p.name)}
                 </button>
               );
             })}
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">API 地址（Base URL）</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-300">{t("API 地址（Base URL）")}</Label>
             <Input
               value={settings.baseUrl}
               onChange={(e) => patch({ baseUrl: e.target.value })}
@@ -166,12 +170,14 @@ export default function SettingsView({
               placeholder="sk-..."
               className="border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
             />
-            <p className="mt-1 text-[11px] text-zinc-600">
-              密钥只保存在本机浏览器 localStorage，不会上传到任何服务器
-            </p>
+            <p className="mt-1 text-[11px] text-zinc-600">{t("密钥只保存在本机浏览器 localStorage，不会上传到任何服务器")}</p>
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">模型名称</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-300">{t("模型名称")}</Label>
+            <div className="mb-2 flex items-center gap-2">
+              <button className="nexus-button" disabled={modelsBusy} onClick={async()=>{ setModelsBusy(true); try { setModels(await listModels(settings)); } catch(e) {setTestResult({ok:false,text:String(e)})} finally {setModelsBusy(false)} }}>{modelsBusy ? t('加载中…') : t('获取模型列表', 'Fetch models')}</button>
+              {models.length > 0 && <select aria-label={t('模型名称')} className="nexus-input min-w-0" value={settings.model} onChange={e=>patch({model:e.target.value})}><option value={settings.model}>{settings.model}</option>{models.filter(m=>m!==settings.model).map(m=><option key={m}>{m}</option>)}</select>}
+            </div>
             <Input
               value={settings.model}
               onChange={(e) => patch({ model: e.target.value })}
@@ -179,9 +185,9 @@ export default function SettingsView({
               className="border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
             />
           </div>
+          <label className="block text-sm text-zinc-300">{t('请求超时（秒）', 'Request timeout (seconds)')}<Input type="number" min={15} max={600} value={settings.requestTimeout} onChange={e=>patch({requestTimeout:Math.min(600,Math.max(15,Number(e.target.value)||120))})} className="mt-2 border-zinc-800 bg-zinc-950"/></label>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">
-              温度（Temperature）：{settings.temperature.toFixed(1)}
+            <Label className="mb-1.5 block text-sm text-zinc-300">{t("温度（Temperature）：")}{settings.temperature.toFixed(1)}
             </Label>
             <Slider
               value={[settings.temperature]}
@@ -192,9 +198,7 @@ export default function SettingsView({
             />
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">
-              推理强度（Reasoning Effort，仅推理模型生效）
-            </Label>
+            <Label className="mb-1.5 block text-sm text-zinc-300">{t("推理强度（Reasoning Effort，仅推理模型生效）")}</Label>
             <div className="flex gap-2">
               {(
                 [
@@ -214,15 +218,13 @@ export default function SettingsView({
                       : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-600'
                   }`}
                 >
-                  {label}
+                  {t(label)}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">
-              系统提示词（支持 {'{{date}}'} {'{{time}}'} {'{{model}}'} 变量）
-            </Label>
+            <Label className="mb-1.5 block text-sm text-zinc-300">{t("系统提示词（支持")}{'{{date}}'} {'{{time}}'} {'{{model}}'}{t("变量）")}</Label>
             <Textarea
               value={settings.systemPrompt}
               onChange={(e) => patch({ systemPrompt: e.target.value })}
@@ -240,9 +242,7 @@ export default function SettingsView({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <PlugZap className="mr-2 h-4 w-4" />
-              )}
-              测试连接
-            </Button>
+              )}{t("测试连接")}</Button>
             {testResult && (
               <span
                 className={`flex items-center gap-1.5 text-sm ${
@@ -259,9 +259,7 @@ export default function SettingsView({
         {/* approval mode */}
         <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-            <ShieldCheck className="h-4 w-4 text-indigo-400" />
-            工具审批模式
-          </h2>
+            <ShieldCheck className="h-4 w-4 text-indigo-400" />{t("工具审批模式")}</h2>
           <div className="space-y-2">
             {APPROVAL_OPTIONS.map((o) => (
               <button
@@ -281,8 +279,8 @@ export default function SettingsView({
                   }`}
                 />
                 <div>
-                  <div className="text-sm text-zinc-200">{o.label}</div>
-                  <div className="text-xs text-zinc-500">{o.desc}</div>
+                  <div className="text-sm text-zinc-200">{t(o.label)}</div>
+                  <div className="text-xs text-zinc-500">{t(o.desc)}</div>
                 </div>
               </button>
             ))}
@@ -292,13 +290,8 @@ export default function SettingsView({
         {/* workspace */}
         <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-            <FolderOpen className="h-4 w-4 text-indigo-400" />
-            工作区文件夹
-          </h2>
-          <p className="text-xs leading-relaxed text-zinc-500">
-            绑定一个本地文件夹后，大模型可以用工作区文件插件在里面读写代码和文档（Codex
-            式工作区）。出于浏览器安全限制，刷新页面后需要重新授权一次。
-          </p>
+            <FolderOpen className="h-4 w-4 text-indigo-400" />{t("工作区文件夹")}</h2>
+          <p className="text-xs leading-relaxed text-zinc-500">{t("绑定一个本地文件夹后，大模型可以用工作区文件插件在里面读写代码和文档（Codex 式工作区）。出于浏览器安全限制，刷新页面后需要重新授权一次。")}</p>
           <div className="flex items-center gap-3">
             <Button
               onClick={pickWs}
@@ -310,8 +303,7 @@ export default function SettingsView({
             </Button>
             {workspaceName && (
               <span className="flex items-center gap-1.5 text-sm text-emerald-400">
-                <CheckCircle2 className="h-4 w-4" />
-                已绑定：{workspaceName}
+                <CheckCircle2 className="h-4 w-4" />{t("已绑定：")}{workspaceName}
               </span>
             )}
           </div>
@@ -321,16 +313,12 @@ export default function SettingsView({
         {/* MCP servers */}
         <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-            <Server className="h-4 w-4 text-indigo-400" />
-            MCP 服务器
-          </h2>
-          <p className="text-xs leading-relaxed text-zinc-500">
-            接入任何 MCP（Model Context Protocol）服务器，它的工具会自动出现在大模型的工具箱里。填写
-            Streamable HTTP 地址（本地或远程均可，需允许跨域）。
-          </p>
+            <Server className="h-4 w-4 text-indigo-400" />{t("MCP 服务器")}</h2>
+          <p className="text-xs leading-relaxed text-zinc-500">{t("接入任何 MCP（Model Context Protocol）服务器，它的工具会自动出现在大模型的工具箱里。填写 Streamable HTTP 地址（本地或远程均可，需允许跨域）。")}</p>
 
           {settings.mcpServers.map((s) => (
             <div key={s.id} className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+              <Input aria-label="MCP bearer token" type="password" autoComplete="off" value={s.token || ''} onChange={e=>patchServer(s.id,{token:e.target.value})} placeholder={t('认证密钥（可选）', 'Bearer token (optional)')} className="mb-2 border-zinc-700 bg-zinc-900"/>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={s.enabled}
@@ -344,7 +332,7 @@ export default function SettingsView({
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-zinc-400 hover:text-zinc-200"
-                  title="连接并刷新工具列表"
+                  title={t("连接并刷新工具列表")}
                   disabled={mcpBusy[s.id]}
                   onClick={() => probeServer(s)}
                 >
@@ -375,7 +363,7 @@ export default function SettingsView({
             <Input
               value={mcpName}
               onChange={(e) => setMcpName(e.target.value)}
-              placeholder="名称，例如 filesystem"
+              placeholder={t("名称，例如 filesystem")}
               className="h-9 border-zinc-800 bg-zinc-950 text-sm text-zinc-100"
             />
             <Input

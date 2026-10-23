@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useT } from '@/lib/i18n';
+import { useEffect, useState } from 'react';
+import { setLanguage } from '@/lib/i18n';
+import DevicesView from '@/sections/DevicesView';
 import { Bot, Menu, MessageSquare, Plus, Puzzle, Settings2, Sparkles, Trash2, X } from 'lucide-react';
 import ChatView from '@/sections/ChatView';
 import PluginsView from '@/sections/PluginsView';
@@ -14,19 +17,22 @@ import {
 import { pickWorkspace } from '@/lib/fs';
 import type { AppSettings, Assistant, ChatMessage, Conversation, PluginStates } from '@/types';
 
-type Tab = 'chat' | 'assistants' | 'plugins' | 'settings';
+type Tab = 'chat' | 'assistants' | 'plugins' | 'devices' | 'settings';
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'chat', label: '对话', icon: MessageSquare },
   { id: 'assistants', label: '助手', icon: Sparkles },
   { id: 'plugins', label: '插件', icon: Puzzle },
+  { id: 'devices', label: '设备控制', icon: Bot },
   { id: 'settings', label: '设置', icon: Settings2 },
 ];
 
 export default function App() {
+ const t = useT();
   const [tab, setTab] = useState<Tab>('chat');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settings, setSettings] = useLocalStorage<AppSettings>('nexus.settings', DEFAULT_SETTINGS);
+  useEffect(() => setLanguage(settings.locale), [settings.locale]);
   const [pluginStates, setPluginStates] = useLocalStorage<PluginStates>(
     'nexus.plugins',
     DEFAULT_PLUGIN_STATES,
@@ -43,7 +49,7 @@ export default function App() {
     'nexus.activeAssistant',
     'default',
   );
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useLocalStorage<string | null>('nexus.activeConversation', null);
   const [workspaceName, setWorkspaceName] = useState<string | null>(null);
 
   const active = conversations.find((c) => c.id === activeId) ?? null;
@@ -54,7 +60,7 @@ export default function App() {
     setConversations((list) => [
       {
         id,
-        title: init?.title || '新对话',
+        title: init?.title || t('新对话'),
         messages: init?.messages || [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -90,7 +96,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="nexus-app flex w-full overflow-hidden text-zinc-100">
       {/* mobile backdrop */}
       {drawerOpen && (
         <div
@@ -111,9 +117,10 @@ export default function App() {
           </div>
           <div>
             <div className="text-sm font-semibold leading-tight">NexusAI</div>
-            <div className="text-[11px] leading-tight text-zinc-500">智能体客户端</div>
+            <div className="text-[11px] leading-tight text-zinc-500">{t("智能体客户端")}</div>
           </div>
           <button
+            aria-label={t('关闭侧栏', 'Close sidebar')}
             className="ml-auto text-zinc-500 hover:text-zinc-300 md:hidden"
             onClick={() => setDrawerOpen(false)}
           >
@@ -136,7 +143,7 @@ export default function App() {
                 }`}
               >
                 <Icon className="h-4 w-4" />
-                {n.label}
+                {t(n.label)}
               </button>
             );
           })}
@@ -149,9 +156,7 @@ export default function App() {
                 onClick={() => createConversation()}
                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-zinc-700 px-3 py-2 text-sm text-zinc-400 transition hover:border-indigo-600 hover:text-indigo-300"
               >
-                <Plus className="h-4 w-4" />
-                新建对话
-              </button>
+                <Plus className="h-4 w-4" />{t("新建对话")}</button>
             </div>
             <div className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2">
               {conversations.map((c) => (
@@ -180,14 +185,14 @@ export default function App() {
                 </div>
               ))}
               {conversations.length === 0 && (
-                <p className="px-3 py-2 text-xs text-zinc-600">暂无历史对话</p>
+                <p className="px-3 py-2 text-xs text-zinc-600">{t("暂无历史对话")}</p>
               )}
             </div>
           </>
         )}
 
-        <div className="border-t border-zinc-800 px-4 py-3 text-[11px] text-zinc-600">
-          本地运行 · 数据不出本机
+        <div className="mt-auto border-t border-zinc-800 px-4 py-3 text-[11px] text-zinc-500">{t('历史保存在本机 · 请求发送至配置的 API', 'History on device · Requests go to your API')}
+          <select aria-label="Language" value={settings.locale} onChange={e=>setSettings(s=>({...s,locale:e.target.value as 'zh'|'en'}))} className="mt-3 block w-full rounded-lg bg-zinc-800 p-2 text-xs text-zinc-200"><option value="zh">简体中文</option><option value="en">English</option></select>
         </div>
       </aside>
 
@@ -196,6 +201,7 @@ export default function App() {
         {/* mobile top bar */}
         <div className="flex h-11 shrink-0 items-center gap-2 border-b border-zinc-800 px-3 md:hidden">
           <button
+            aria-label={t('打开侧栏', 'Open sidebar')}
             onClick={() => setDrawerOpen(true)}
             className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800"
           >
@@ -210,6 +216,7 @@ export default function App() {
         </div>
 
         <main className="min-h-0 min-w-0 flex-1">
+          {tab === 'devices' && <DevicesView settings={settings} setSettings={setSettings}/>}
           {tab === 'chat' && (
             <ChatView
               conversation={active}

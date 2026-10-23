@@ -1,3 +1,4 @@
+import { useT } from '@/lib/i18n';
 import {
   Brain,
   FolderOpen,
@@ -31,8 +32,25 @@ interface PluginsViewProps {
   pluginStates: PluginStates;
   setPluginStates: React.Dispatch<React.SetStateAction<PluginStates>>;
 }
+const COPY: Record<string, [string, string]> = {
+  'browser-use': ['Search · Open · Read', 'Search and read public web pages through an external proxy. Network access and proxy availability are required.'],
+  workspace: ['List · Read · Write', 'Access a folder explicitly selected on a supported desktop browser. Connect the desktop service for phone access.'],
+  'computer-use': ['Clipboard · Notifications · Downloads', 'Browser device utilities. This does not provide operating-system screen control.'],
+  'phone-use': ['Optional Android gateway', 'Connect a separately installed Android gateway. The app does not bundle an accessibility service yet.'],
+  'agent-plan': ['Plan · Track progress', 'Keep task steps and completion status alongside the conversation.'],
+  memory: ['Preferences across chats', 'Save and recall facts on this device.'],
+  'code-runner': ['JavaScript worker sandbox', 'Run JavaScript in a browser worker with a timeout. This is not a desktop terminal.'],
+  utilities: ['Time · Calculator', 'Read the current time and evaluate arithmetic expressions.'],
+};
+const REQUIREMENTS: Record<string, [string, string]> = {
+  'phone-use': ['需要另行安装并连接手机网关', 'Separate Android gateway required'],
+  workspace: ['需要桌面浏览器文件夹授权；手机请用设备连接', 'Folder permission required; on phones, use Devices'],
+  'computer-use': ['受浏览器权限限制；不支持屏幕点击控制', 'Browser permissions required; no screen clicking'],
+  'browser-use': ['依赖外部网页代理可用性', 'Requires an available external web proxy'],
+};
 
 export default function PluginsView({ pluginStates, setPluginStates }: PluginsViewProps) {
+ const t = useT();
   const toggle = (id: string, enabled: boolean) =>
     setPluginStates((s) => ({ ...s, [id]: { ...s[id], enabled } }));
 
@@ -48,10 +66,8 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
         <div className="mb-5 flex items-center gap-3">
           <PackageCheck className="h-5 w-5 text-indigo-400" />
           <div>
-            <h1 className="text-lg font-semibold text-zinc-100">插件中心</h1>
-            <p className="text-sm text-zinc-500">
-              全部插件已预装并配置好，开关即可控制大模型能否调用
-            </p>
+            <h1 className="text-lg font-semibold text-zinc-100">{t("插件中心")}</h1>
+            <p className="text-sm text-zinc-500">{t("全部插件已预装并配置好，开关即可控制大模型能否调用")}</p>
           </div>
         </div>
 
@@ -74,18 +90,16 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="whitespace-nowrap font-medium text-zinc-100">{p.name}</span>
+                      <span className="whitespace-nowrap font-medium text-zinc-100">{t(p.name)}</span>
                       <Badge
                         variant="secondary"
                         className="bg-zinc-800 font-mono text-[10px] text-zinc-400"
                       >
                         v{p.version}
                       </Badge>
-                      <Badge className="bg-emerald-900/50 text-[10px] text-emerald-300 hover:bg-emerald-900/50">
-                        已预装
-                      </Badge>
+                      <Badge className="bg-emerald-900/50 text-[10px] text-emerald-300 hover:bg-emerald-900/50">{t("已预装")}</Badge>
                     </div>
-                    <div className="mt-0.5 text-xs text-zinc-500">{p.tagline}</div>
+                    <div className="mt-0.5 text-xs text-zinc-500">{t(p.tagline, COPY[p.id]?.[0])}</div>
                   </div>
                   <Switch
                     checked={state?.enabled ?? false}
@@ -93,7 +107,8 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                   />
                 </div>
 
-                <p className="mb-3 text-[13px] leading-relaxed text-zinc-400">{p.description}</p>
+                <p className="mb-3 text-[13px] leading-relaxed text-zinc-400">{t(p.description, COPY[p.id]?.[1])}</p>
+                <p className="mb-3 text-xs text-amber-300">{t(REQUIREMENTS[p.id]?.[0] || '内置能力', REQUIREMENTS[p.id]?.[1] || 'Built-in capability')}</p>
 
                 <div className="mb-1 flex flex-wrap gap-1.5">
                   {p.tools.map((t) => (

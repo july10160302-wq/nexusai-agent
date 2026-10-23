@@ -1,5 +1,7 @@
 # NexusAI
 
+**v2 preview:** [Changes, pairing instructions and current limits](docs/V2-PREVIEW.md). The preview adds a bilingual UI, separate Chat/Agent modes, streaming fixes and an authenticated desktop workspace service. Native Android screen control is not included yet.
+
 **A local-first, Codex-inspired AI agent client for desktop and mobile.**
 
 [简体中文](./README.zh-CN.md)

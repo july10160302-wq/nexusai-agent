@@ -1,3 +1,4 @@
+import { useT } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -71,6 +72,7 @@ function extractText(node: React.ReactNode): string {
 }
 
 function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
+ const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <div className="relative my-2">
@@ -85,7 +87,7 @@ function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
           setTimeout(() => setCopied(false), 1500);
         }}
         className="absolute right-2 top-2 rounded bg-zinc-800 p-1 text-zinc-400 hover:text-zinc-200"
-        title="复制代码"
+        title={t("复制代码")}
       >
         {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
       </button>
@@ -158,6 +160,7 @@ function Markdown({ text }: { text: string }) {
 /* ---------------- fs_write diff preview ---------------- */
 
 function WriteDiffPreview({ argsJson }: { argsJson: string }) {
+ const t = useT();
   const [diff, setDiff] = useState<(DiffLine | { type: 'gap' })[] | null>(null);
   const [isNew, setIsNew] = useState(false);
 
@@ -186,7 +189,7 @@ function WriteDiffPreview({ argsJson }: { argsJson: string }) {
   if (!diff) return null;
   return (
     <div className="mb-2 max-h-48 overflow-auto rounded bg-zinc-950 p-2 font-mono text-[11px] leading-relaxed">
-      {isNew && <div className="mb-1 text-zinc-500">（新文件）</div>}
+      {isNew && <div className="mb-1 text-zinc-500">{t("（新文件）")}</div>}
       {diff.map((l, i) =>
         l.type === 'gap' ? (
           <div key={i} className="text-zinc-600">
@@ -221,6 +224,7 @@ function ToolCallCard({
   tc: ToolCallRecord;
   onResolve: (id: string, ok: boolean) => void;
 }) {
+ const t = useT();
   const [open, setOpen] = useState(false);
   let prettyArgs = tc.args;
   try {
@@ -263,24 +267,20 @@ function ToolCallCard({
         <div className="border-t border-amber-800/40 px-3 py-2">
           {tc.name === 'fs_write' && <WriteDiffPreview argsJson={tc.args} />}
           <div className="flex items-center gap-2">
-            <span className="flex-1 text-xs text-amber-200/80">此操作需要你的批准才会执行</span>
+            <span className="flex-1 text-xs text-amber-200/80">{t("此操作需要你的批准才会执行")}</span>
             <Button
               size="sm"
               className="h-7 bg-emerald-700 text-xs hover:bg-emerald-600"
               onClick={() => onResolve(tc.id, true)}
             >
-              <Check className="mr-1 h-3 w-3" />
-              批准
-            </Button>
+              <Check className="mr-1 h-3 w-3" />{t("批准")}</Button>
             <Button
               size="sm"
               variant="outline"
               className="h-7 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
               onClick={() => onResolve(tc.id, false)}
             >
-              <X className="mr-1 h-3 w-3" />
-              拒绝
-            </Button>
+              <X className="mr-1 h-3 w-3" />{t("拒绝")}</Button>
           </div>
         </div>
       )}
@@ -288,14 +288,14 @@ function ToolCallCard({
       {open && (
         <div className="space-y-2 border-t border-zinc-800 px-3 py-2">
           <div>
-            <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">参数</div>
+            <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">{t("参数")}</div>
             <pre className="overflow-x-auto rounded bg-zinc-950 p-2 font-mono text-xs text-zinc-300">
               {prettyArgs}
             </pre>
           </div>
           {tc.result !== undefined && (
             <div>
-              <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">结果</div>
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">{t("结果")}</div>
               <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded bg-zinc-950 p-2 font-mono text-xs text-zinc-300">
                 {tc.result}
               </pre>
@@ -367,9 +367,18 @@ export default function ChatView({
   onUpdateAssistant,
   goSettings,
 }: ChatViewProps) {
+ const t = useT();
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [running, setRunning] = useState(false);
+  const [phase, setPhase] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    const started = Date.now();
+    const timer = window.setInterval(() => setElapsed((Date.now() - started) / 1000), 250);
+    return () => window.clearInterval(timer);
+  }, [running]);
   const [planOpen, setPlanOpen] = useState(true);
   const [showPluginPicker, setShowPluginPicker] = useState(false);
   const [showMention, setShowMention] = useState(false);
@@ -392,12 +401,17 @@ export default function ChatView({
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<{ stop: () => void } | null>(null);
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    approvalResolvers.current.forEach(resolve => resolve(false));
+    approvalResolvers.current.clear();
+  }, []);
   const msgEls = useRef(new Map<string, HTMLDivElement>());
 
   const messages = conversation?.messages ?? [];
   const plan = conversation?.plan ?? [];
   const enabledCount = Object.values(pluginStates).filter((p) => p.enabled).length;
-  const apiReady = Boolean(settings.baseUrl && settings.apiKey && settings.model);
+  const apiReady = Boolean(settings.baseUrl && settings.model);
   const effModel = assistant?.model || settings.model;
 
   const suggestions =
@@ -476,7 +490,7 @@ export default function ChatView({
     };
     const mems = getMemories();
     const sysPrompt =
-      expandPrompt(assistant?.systemPrompt || settings.systemPrompt, effModel) +
+      expandPrompt(assistant?.systemPrompt || settings.systemPrompt, effModel) + (settings.locale === 'en' ? '\nRespond in English. Only use tools provided in this request. Never claim an action succeeded without a tool result.' : '\n使用中文回答。仅使用当前请求提供的工具，未得到工具结果时不得声称执行成功。') +
       (mems.length ? `\n\n【长期记忆】\n${mems.map((m) => `- ${m}`).join('\n')}` : '');
     return { effSettings, sysPrompt };
   }
@@ -498,46 +512,24 @@ export default function ChatView({
     }
   }
 
-  async function autoTitle(convId: string, history: ChatMessage[]) {
-    try {
-      const { effSettings } = buildAgentConfig();
-      const { content } = await chatOnce({
-        settings: effSettings,
-        messages: [
-          ...toApiMessages(history, ''),
-          {
-            role: 'user',
-            content: '请为以上对话生成一个 10 字以内的简短标题，只输出标题本身，不要标点符号。',
-          },
-        ],
-        tools: [],
-        onDelta: () => undefined,
-      });
-      const title = content.trim().replace(/["'。\n]/g, '').slice(0, 20);
-      if (title) onUpdate(convId, (c) => ({ ...c, title }));
-    } catch {
-      /* 标题生成失败无妨 */
-    }
-  }
-
   async function agentLoop(convId: string, startHistory: ChatMessage[], pluginFilter?: string[]) {
-    for (const s of settings.mcpServers.filter((x) => x.enabled)) {
-      try {
-        await refreshMcpTools(s);
-      } catch {
-        /* 服务器不可达时跳过 */
-      }
+    const signal = abortRef.current!.signal;
+    if (settings.chatMode === 'agent') {
+      setPhase(t('正在连接工具', 'Connecting tools'));
+      const results = await Promise.allSettled(settings.mcpServers.filter(s => s.enabled).map(s => refreshMcpTools(s, true, signal)));
+      signal.throwIfAborted();
+      const errors = results.filter(r => r.status === 'rejected');
+      if (errors.length) throw new Error(t('部分 MCP 无法连接，请检查设备或在设置中停用。', 'Some MCP servers could not connect. Check your devices or disable them in Settings.'));
     }
-
     const { effSettings, sysPrompt } = buildAgentConfig();
-    const tools = buildToolSchemas(
-      pluginStates,
-      settings.mcpServers,
-      pluginFilter?.length ? pluginFilter : assistant?.pluginIds,
-    );
+    const tools = settings.chatMode === 'agent' ? buildToolSchemas(
+      pluginStates, settings.mcpServers,
+      pluginFilter ?? (assistant?.pluginIds.length ? assistant.pluginIds : undefined),
+    ) : [];
     let history = startHistory;
 
     for (let round = 0; round < settings.maxToolRounds; round++) {
+      signal.throwIfAborted();
       const asstId = uid();
       onUpdate(convId, (c) => ({
         ...c,
@@ -551,7 +543,8 @@ export default function ChatView({
         settings: effSettings,
         messages: toApiMessages(history, sysPrompt),
         tools,
-        signal: abortRef.current?.signal,
+        signal,
+        onPhase: value => setPhase(t(({ connecting: '连接中', receiving: '接收中', reasoning: '模型正在推理', streaming: '正在回复' })[value])),
         onDelta: (t) =>
           onUpdate(convId, (c) => ({
             ...c,
@@ -581,7 +574,7 @@ export default function ChatView({
             m.id === asstId ? { ...m, toolCalls: undefined, usage } : m,
           ),
         }));
-        if (startHistory.length === 1) void autoTitle(convId, history);
+        if (startHistory.length === 1) onUpdate(convId, c => ({ ...c, title: startHistory[0].content.slice(0, 36) || c.title }));
         return;
       }
 
@@ -595,6 +588,7 @@ export default function ChatView({
       }));
 
       for (const tc of toolCalls) {
+        signal.throwIfAborted();
         let result = '';
         let status: ToolCallRecord['status'] = 'done';
         let approved = true;
@@ -613,7 +607,9 @@ export default function ChatView({
                 : m,
             ),
           }));
+          setPhase(t('等待批准', 'Waiting for approval'));
           approved = await requestApproval(tc.id);
+          signal.throwIfAborted();
         }
 
         if (!approved) {
@@ -633,6 +629,8 @@ export default function ChatView({
                 : m,
             ),
           }));
+          signal.throwIfAborted();
+          setPhase(t('正在执行工具', 'Running tool') + ': ' + tc.name);
           result =
             tc.name === 'plan_update'
               ? updatePlanFromArgs(convId, tc.args)
@@ -666,27 +664,30 @@ export default function ChatView({
         onUpdate(convId, (c) => ({ ...c, messages: [...c.messages, toolMsg] }));
       }
     }
+    throw new Error(t('已达到本轮工具次数上限，可发送消息继续。', 'Tool round limit reached. Send a message to continue.'));
   }
 
   async function runAgent(convId: string, history: ChatMessage[], pluginFilter?: string[]) {
     setRunning(true);
+    setElapsed(0);
+    setPhase(t('连接中'));
     abortRef.current = new AbortController();
     try {
       await agentLoop(convId, history, pluginFilter);
     } catch (e) {
       const msg =
         e instanceof DOMException && e.name === 'AbortError'
-          ? '⏹ 已停止生成'
+          ? t('⏹ 已停止生成', '⏹ Generation stopped')
           : `⚠️ ${e instanceof Error ? e.message : String(e)}`;
       onUpdate(convId, (c) => ({
         ...c,
-        messages: [
-          ...c.messages,
-          { id: uid(), role: 'assistant', content: msg, timestamp: Date.now() },
-        ],
+        messages: c.messages.some(m => m.role === 'assistant' && !m.content && !m.toolCalls?.length)
+          ? c.messages.map(m => m.role === 'assistant' && !m.content && !m.toolCalls?.length ? { ...m, content: msg } : m)
+          : [...c.messages, { id: uid(), role: 'assistant', content: msg, timestamp: Date.now() }],
       }));
     } finally {
       setRunning(false);
+      setPhase('');
       abortRef.current = null;
       if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
         new Notification('NexusAI 任务完成', { body: '智能体已完成本轮工作' });
@@ -946,8 +947,14 @@ export default function ChatView({
   const doneCount = plan.filter((p) => p.done).length;
 
   return (
-    <div className="relative flex h-full flex-col">
+    <div className="nexus-chat relative flex h-full min-h-0 flex-col">
       {/* header */}
+      <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-3 text-xs">
+        <div className="flex rounded-full bg-zinc-800 p-1" role="group" aria-label="Chat mode">
+          {(['chat','agent'] as const).map(mode => <button key={mode} disabled={running} onClick={()=>setSettings(s=>({...s,chatMode:mode}))} className={`rounded-full px-4 py-1.5 transition ${settings.chatMode === mode ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>{t(mode === 'chat' ? '聊天' : '智能体')}</button>)}
+        </div>
+        <span role="status" className="min-w-0 truncate text-zinc-400">{running ? phase + ' · ' + elapsed.toFixed(1) + 's' : settings.chatMode === 'chat' ? t('直接对话，不加载工具', 'Direct chat · Tools off') : t('工具与审批已启用', 'Tools & approvals enabled')}</span>
+      </div>
       <div className="relative flex items-center gap-2 border-b border-zinc-800 px-3 py-3 sm:px-5">
         {assistant ? (
           <span className="text-base" title={assistant.name}>
@@ -957,7 +964,7 @@ export default function ChatView({
           <Bot className="h-4 w-4 text-indigo-400" />
         )}
         <span className="min-w-0 truncate whitespace-nowrap text-sm font-medium text-zinc-200">
-          {conversation?.title || '新对话'}
+          {conversation?.title || t('新对话')}
         </span>
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <select
@@ -968,7 +975,7 @@ export default function ChatView({
               else setSettings((s) => ({ ...s, model: v }));
             }}
             className="max-w-28 truncate rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 outline-none sm:max-w-44"
-            title="快速切换模型"
+            title={t("快速切换模型")}
           >
             {modelOptions.map((m) => (
               <option key={m} value={m}>
@@ -984,7 +991,7 @@ export default function ChatView({
                 if (searchOpen) setSearchQuery('');
               }}
               className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
-              title="搜索对话内容"
+              title={t("搜索对话内容")}
             >
               <Search className="h-3.5 w-3.5" />
             </button>
@@ -994,7 +1001,7 @@ export default function ChatView({
             <button
               onClick={() => setShowActivity(true)}
               className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
-              title="活动日志"
+              title={t("活动日志")}
             >
               <Activity className="h-3.5 w-3.5" />
             </button>
@@ -1004,21 +1011,20 @@ export default function ChatView({
             <button
               onClick={() => setShowPluginPicker(!showPluginPicker)}
               className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
-              title="选择本对话可用的插件"
+              title={t("选择本对话可用的插件")}
             >
               <Puzzle className="h-3.5 w-3.5" />
             </button>
           )}
 
           <Badge variant="secondary" className="hidden bg-zinc-800 text-zinc-300 sm:inline-flex">
-            {enabledCount} 插件
-          </Badge>
+            {enabledCount}{t("插件")}</Badge>
           {conversation && conversation.messages.length > 0 && (
             <Button
               size="icon"
               variant="ghost"
               className="h-7 w-7 text-zinc-400 hover:text-zinc-200"
-              title="导出为 Markdown"
+              title={t("导出为 Markdown")}
               onClick={exportMarkdown}
             >
               <Download className="h-4 w-4" />
@@ -1032,13 +1038,11 @@ export default function ChatView({
             <div className="fixed inset-0 z-10" onClick={() => setShowPluginPicker(false)} />
             <div className="absolute right-3 top-full z-20 mt-1 w-60 rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-xl">
               <div className="mb-1 flex items-center justify-between px-2 py-1">
-                <span className="text-xs text-zinc-400">本对话可用插件</span>
+                <span className="text-xs text-zinc-400">{t("本对话可用插件")}</span>
                 <button
                   className="text-[11px] text-indigo-400 hover:underline"
                   onClick={() => onUpdate(conversation.id, (c) => ({ ...c, pluginFilter: undefined }))}
-                >
-                  重置
-                </button>
+                >{t("重置")}</button>
               </div>
               {[...PLUGINS.map((p) => ({ id: p.id, name: p.name })), { id: 'mcp', name: 'MCP 服务器工具' }].map(
                 (p) => (
@@ -1054,7 +1058,7 @@ export default function ChatView({
                     >
                       {pluginOn(p.id) && <Check className="h-3 w-3 text-white" />}
                     </span>
-                    {p.name}
+                    {t(p.name)}
                   </button>
                 ),
               )}
@@ -1077,7 +1081,7 @@ export default function ChatView({
             onKeyDown={(e) => {
               if (e.key === 'Enter') jumpToMatch(searchIdx + (e.shiftKey ? -1 : 0));
             }}
-            placeholder="搜索对话内容，Enter 跳转…"
+            placeholder={t("搜索对话内容，Enter 跳转…")}
             className="min-w-0 flex-1 bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-600"
           />
           <span className="shrink-0 text-xs text-zinc-500">
@@ -1106,15 +1110,13 @@ export default function ChatView({
         {!apiReady && (
           <div className="mx-auto mb-4 flex max-w-xl items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
             <KeyRound className="h-4 w-4 shrink-0" />
-            <span>还没有配置大模型 API。</span>
+            <span>{t("还没有配置大模型 API。")}</span>
             <Button
               size="sm"
               variant="outline"
               className="ml-auto border-amber-700 bg-transparent text-amber-200 hover:bg-amber-900/40"
               onClick={goSettings}
-            >
-              去设置
-            </Button>
+            >{t("去设置")}</Button>
           </div>
         )}
 
@@ -1124,25 +1126,21 @@ export default function ChatView({
               {assistant?.emoji ?? <Bot className="h-7 w-7 text-indigo-400" />}
             </div>
             <h2 className="mb-1 text-xl font-semibold text-zinc-100">
-              {assistant?.name ?? 'NexusAI 智能体'}
+              {t('今天想做些什么？')}
             </h2>
-            <p className="mb-6 text-sm text-zinc-500">
-              工作区文件 · 工具审批 · 任务计划 · 代码执行 · MCP 生态
-            </p>
+            <p className="mb-6 text-sm text-zinc-500">{t("工作区文件 · 工具审批 · 任务计划 · 代码执行 · MCP 生态")}</p>
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
               {QUICK_PROMPTS.map((q) => (
                 <button
-                  key={q}
-                  onClick={() => send(q)}
+                  key={t(q)}
+                  onClick={() => send(t(q))}
                   className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left text-[13px] text-zinc-300 transition hover:border-indigo-700 hover:bg-zinc-900"
                 >
-                  {q}
+                  {t(q)}
                 </button>
               ))}
             </div>
-            <p className="mt-4 text-[11px] text-zinc-600">
-              输入 / 呼出快捷命令 · 点击 @ 引用工作区文件 · 支持语音输入
-            </p>
+            <p className="mt-4 text-[11px] text-zinc-600">{t("输入 / 呼出快捷命令 · 点击 @ 引用工作区文件 · 支持语音输入")}</p>
           </div>
         ) : (
           <div className="mx-auto max-w-3xl space-y-5">
@@ -1171,22 +1169,18 @@ export default function ChatView({
                             variant="outline"
                             className="h-7 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
                             onClick={() => setEditingId(null)}
-                          >
-                            取消
-                          </Button>
+                          >{t("取消")}</Button>
                           <Button
                             size="sm"
                             className="h-7 bg-indigo-600 text-xs hover:bg-indigo-500"
                             onClick={() => saveEdit(m.id)}
-                          >
-                            保存并重新生成
-                          </Button>
+                          >{t("保存并重新生成")}</Button>
                         </div>
                       </div>
                     ) : (
                       <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2.5 text-sm leading-relaxed text-white sm:max-w-[80%]">
                         {m.attachments?.map((a, i) => (
-                          <img key={i} src={a.dataUrl} alt={a.name} className="mb-2 max-h-48 rounded-lg" />
+                          <img key={i} src={a.dataUrl} alt={t(a.name)} className="mb-2 max-h-48 rounded-lg" />
                         ))}
                         <span className="whitespace-pre-wrap">{m.content}</span>
                       </div>
@@ -1196,19 +1190,15 @@ export default function ChatView({
                         <button
                           onClick={() => startEdit(m)}
                           className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                          title="编辑并重新生成"
+                          title={t("编辑并重新生成")}
                         >
-                          <Pencil className="h-3 w-3" />
-                          编辑
-                        </button>
+                          <Pencil className="h-3 w-3" />{t("编辑")}</button>
                         <button
                           onClick={() => branchFrom(m.id)}
                           className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                          title="从这里分支新对话"
+                          title={t("从这里分支新对话")}
                         >
-                          <GitBranch className="h-3 w-3" />
-                          分支
-                        </button>
+                          <GitBranch className="h-3 w-3" />{t("分支")}</button>
                       </div>
                     )}
                   </div>
@@ -1224,7 +1214,7 @@ export default function ChatView({
                       {m.content ? (
                         <Markdown text={m.content} />
                       ) : (
-                        !m.toolCalls?.length && <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
+                        !m.toolCalls?.length && (running && m.id === visibleMessages.at(-1)?.id ? <Loader2 className="h-4 w-4 animate-spin text-zinc-500" /> : <span className="text-zinc-500">{t('回复已中断，请重试', 'Response interrupted. Please retry.')}</span>)
                       )}
                       <div className="mt-1 flex items-center gap-2">
                         {m.usage && (
@@ -1236,31 +1226,25 @@ export default function ChatView({
                           <button
                             onClick={() => copyMessage(m)}
                             className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                            title="复制内容"
+                            title={t("复制内容")}
                           >
                             {copiedId === m.id ? (
                               <Check className="h-3 w-3 text-emerald-400" />
                             ) : (
                               <Copy className="h-3 w-3" />
-                            )}
-                            复制
-                          </button>
+                            )}{t("复制")}</button>
                           <button
                             onClick={() => regenerate(m.id)}
                             className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                            title="重新生成"
+                            title={t("重新生成")}
                           >
-                            <RotateCcw className="h-3 w-3" />
-                            重新生成
-                          </button>
+                            <RotateCcw className="h-3 w-3" />{t("重新生成")}</button>
                           <button
                             onClick={() => branchFrom(m.id)}
                             className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                            title="从这里分支新对话"
+                            title={t("从这里分支新对话")}
                           >
-                            <GitBranch className="h-3 w-3" />
-                            分支
-                          </button>
+                            <GitBranch className="h-3 w-3" />{t("分支")}</button>
                         </span>
                       </div>
                     </div>
@@ -1281,8 +1265,7 @@ export default function ChatView({
               className="flex w-full items-center gap-2 py-2 text-xs text-zinc-400 hover:text-zinc-200"
             >
               <ListChecks className="h-3.5 w-3.5 text-indigo-400" />
-              <span>
-                任务计划 {doneCount}/{plan.length}
+              <span>{t("任务计划")}{doneCount}/{plan.length}
               </span>
               <span className="ml-auto">
                 {planOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -1310,7 +1293,7 @@ export default function ChatView({
 
       {/* input */}
       <div
-        className={`border-t px-3 py-3 sm:px-5 ${isDragging ? 'border-indigo-500 bg-indigo-950/20' : 'border-zinc-800'}`}
+        className={`nexus-composer border-t px-3 py-3 sm:px-5 ${isDragging ? 'border-indigo-500 bg-indigo-950/20' : 'border-zinc-800'}`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -1344,13 +1327,13 @@ export default function ChatView({
                   autoFocus
                   value={mentionFilter}
                   onChange={(e) => setMentionFilter(e.target.value)}
-                  placeholder="搜索工作区文件…"
+                  placeholder={t("搜索工作区文件…")}
                   className="mb-1.5 h-8 border-zinc-800 bg-zinc-950 text-xs text-zinc-100"
                 />
                 <div className="max-h-48 overflow-y-auto">
                   {mentionError && <p className="px-2 py-1.5 text-xs text-amber-400">{mentionError}</p>}
                   {mentionFiles === null && !mentionError && (
-                    <p className="px-2 py-1.5 text-xs text-zinc-500">加载中…</p>
+                    <p className="px-2 py-1.5 text-xs text-zinc-500">{t("加载中…")}</p>
                   )}
                   {mentionFiles
                     ?.filter((f) => f.toLowerCase().includes(mentionFilter.toLowerCase()))
@@ -1365,7 +1348,7 @@ export default function ChatView({
                       </button>
                     ))}
                   {mentionFiles?.length === 0 && (
-                    <p className="px-2 py-1.5 text-xs text-zinc-500">工作区暂无文件</p>
+                    <p className="px-2 py-1.5 text-xs text-zinc-500">{t("工作区暂无文件")}</p>
                   )}
                 </div>
               </div>
@@ -1376,7 +1359,7 @@ export default function ChatView({
             <div className="mb-2 flex flex-wrap gap-2">
               {attachments.map((a, i) => (
                 <div key={i} className="relative">
-                  <img src={a.dataUrl} alt={a.name} className="h-14 rounded-lg border border-zinc-700" />
+                  <img src={a.dataUrl} alt={t(a.name)} className="h-14 rounded-lg border border-zinc-700" />
                   <button
                     onClick={() => setAttachments((list) => list.filter((_, j) => j !== i))}
                     className="absolute -right-1.5 -top-1.5 rounded-full bg-zinc-700 p-0.5 text-zinc-300 hover:bg-red-600"
@@ -1394,7 +1377,7 @@ export default function ChatView({
               size="icon"
               variant="outline"
               className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-              title="添加图片（需要视觉模型）"
+              title={t("添加图片（需要视觉模型）")}
               onClick={() => fileRef.current?.click()}
             >
               <ImagePlus className="h-4 w-4" />
@@ -1403,7 +1386,7 @@ export default function ChatView({
               size="icon"
               variant="outline"
               className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-              title="引用工作区文件"
+              title={t("引用工作区文件")}
               onClick={openMention}
             >
               <AtSign className="h-4 w-4" />
@@ -1415,7 +1398,7 @@ export default function ChatView({
                 className={`h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 hover:bg-zinc-800 ${
                   recording ? 'animate-pulse text-red-400' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
-                title={recording ? '停止语音输入' : '语音输入'}
+                title={t(recording ? '停止语音输入' : '语音输入')}
                 onClick={toggleVoice}
               >
                 <Mic className="h-4 w-4" />
@@ -1438,7 +1421,7 @@ export default function ChatView({
                   send();
                 }
               }}
-              placeholder={recording ? '正在聆听…' : '输入消息，/ 快捷命令，Enter 发送…'}
+              placeholder={t(recording ? '正在聆听…' : '输入消息，/ 快捷命令，Enter 发送…')}
               className="max-h-40 min-h-[44px] flex-1 resize-none border-zinc-800 bg-zinc-900 text-sm text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-indigo-600"
               rows={1}
             />
@@ -1447,7 +1430,7 @@ export default function ChatView({
                 size="icon"
                 variant="outline"
                 className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-red-400 hover:bg-zinc-800"
-                title="停止（Esc）"
+                title={t("停止（Esc）")}
                 onClick={stop}
               >
                 <CircleStop className="h-4 w-4" />
@@ -1456,6 +1439,7 @@ export default function ChatView({
               <Button
                 size="icon"
                 className="h-11 w-11 shrink-0 bg-indigo-600 hover:bg-indigo-500"
+                aria-label={t('发送消息', 'Send message')}
                 onClick={() => send()}
                 disabled={!input.trim() && !attachments.length}
               >
@@ -1465,10 +1449,8 @@ export default function ChatView({
           </div>
           <p className="mt-2 text-center text-[11px] text-zinc-600">
             {lastUsage
-              ? `上下文 ↑${lastUsage.prompt} ↓${lastUsage.completion} tokens · `
-              : ''}
-            工具调用在本地执行 · 写操作需批准后执行
-          </p>
+              ? `↑${lastUsage.prompt} ↓${lastUsage.completion} tokens · `
+              : ''}{t("工具调用在本地执行 · 写操作需批准后执行")}</p>
         </div>
       </div>
 
@@ -1482,8 +1464,8 @@ export default function ChatView({
           <div className="absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl">
             <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
               <Activity className="h-4 w-4 text-indigo-400" />
-              <span className="text-sm font-medium text-zinc-200">活动日志</span>
-              <span className="text-xs text-zinc-500">{activityEvents.length} 次工具调用</span>
+              <span className="text-sm font-medium text-zinc-200">{t("活动日志")}</span>
+              <span className="text-xs text-zinc-500">{activityEvents.length}{t("次工具调用")}</span>
               <button
                 className="ml-auto text-zinc-500 hover:text-zinc-300"
                 onClick={() => setShowActivity(false)}
@@ -1493,9 +1475,7 @@ export default function ChatView({
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {activityEvents.length === 0 ? (
-                <p className="px-2 py-6 text-center text-xs text-zinc-600">
-                  本轮还没有工具活动
-                </p>
+                <p className="px-2 py-6 text-center text-xs text-zinc-600">{t("本轮还没有工具活动")}</p>
               ) : (
                 <div className="space-y-2">
                   {activityEvents.map((ev) => (

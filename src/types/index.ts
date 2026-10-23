@@ -43,7 +43,7 @@ export interface Conversation {
   plan?: PlanItem[];
   /** 从哪条对话分支而来（源对话 id） */
   branchedFrom?: string;
-  /** 本对话允许使用的插件 id；undefined 或空数组表示不限制 */
+  /** 本对话允许使用的插件 id；undefined 不限制，空数组禁用所有工具 */
   pluginFilter?: string[];
 }
 
@@ -54,11 +54,15 @@ export interface McpServer {
   name: string;
   url: string;
   enabled: boolean;
+  token?: string;
 }
 
 export type ReasoningEffort = 'off' | 'minimal' | 'low' | 'medium' | 'high';
 
 export interface AppSettings {
+  locale: 'zh' | 'en';
+  chatMode: 'chat' | 'agent';
+  requestTimeout: number;
   baseUrl: string;
   apiKey: string;
   model: string;

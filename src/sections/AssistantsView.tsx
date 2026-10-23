@@ -1,3 +1,4 @@
+import { useT } from '@/lib/i18n';
 import { useState } from 'react';
 import { Check, Pencil, Plus, Sparkles, Trash2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,7 @@ export default function AssistantsView({
   activeId,
   setActiveId,
 }: AssistantsViewProps) {
+ const t = useT();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Omit<Assistant, 'id'>>(EMPTY);
 
@@ -83,19 +85,15 @@ export default function AssistantsView({
         <div className="mb-5 flex items-center gap-3">
           <Sparkles className="h-5 w-5 text-indigo-400" />
           <div className="flex-1">
-            <h1 className="text-lg font-semibold text-zinc-100">助手</h1>
-            <p className="text-sm text-zinc-500">
-              每个助手有独立的人设提示词、模型和插件权限，对话时一键切换
-            </p>
+            <h1 className="text-lg font-semibold text-zinc-100">{t("助手")}</h1>
+            <p className="text-sm text-zinc-500">{t("每个助手有独立的人设提示词、模型和插件权限，对话时一键切换")}</p>
           </div>
           <Button
             size="sm"
             onClick={() => startEdit()}
             className="bg-indigo-600 hover:bg-indigo-500"
           >
-            <Plus className="mr-1 h-4 w-4" />
-            新建助手
-          </Button>
+            <Plus className="mr-1 h-4 w-4" />{t("新建助手")}</Button>
         </div>
 
         {/* editor */}
@@ -111,7 +109,7 @@ export default function AssistantsView({
             </div>
             <div className="flex gap-3">
               <div className="w-20">
-                <Label className="mb-1.5 block text-xs text-zinc-500">图标</Label>
+                <Label className="mb-1.5 block text-xs text-zinc-500">{t("图标")}</Label>
                 <Input
                   value={draft.emoji}
                   onChange={(e) => setDraft((d) => ({ ...d, emoji: e.target.value }))}
@@ -120,36 +118,31 @@ export default function AssistantsView({
                 />
               </div>
               <div className="flex-1">
-                <Label className="mb-1.5 block text-xs text-zinc-500">名称</Label>
+                <Label className="mb-1.5 block text-xs text-zinc-500">{t("名称")}</Label>
                 <Input
                   value={draft.name}
                   onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                  placeholder="例如：翻译官"
+                  placeholder={t("例如：翻译官")}
                   className="border-zinc-800 bg-zinc-950 text-zinc-100"
                 />
               </div>
               <div className="flex-1">
-                <Label className="mb-1.5 block text-xs text-zinc-500">
-                  模型（留空跟随全局）
-                </Label>
+                <Label className="mb-1.5 block text-xs text-zinc-500">{t("模型（留空跟随全局）")}</Label>
                 <Input
                   value={draft.model}
                   onChange={(e) => setDraft((d) => ({ ...d, model: e.target.value }))}
-                  placeholder="跟随全局设置"
+                  placeholder={t("跟随全局设置")}
                   className="border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
                 />
               </div>
             </div>
             <div>
-              <Label className="mb-1.5 block text-xs text-zinc-500">
-                温度：{draft.temperature === null ? '跟随全局' : draft.temperature.toFixed(1)}
+              <Label className="mb-1.5 block text-xs text-zinc-500">{t("温度：")}{draft.temperature === null ? '跟随全局' : draft.temperature.toFixed(1)}
                 {draft.temperature !== null && (
                   <button
                     className="ml-2 text-indigo-400 hover:underline"
                     onClick={() => setDraft((d) => ({ ...d, temperature: null }))}
-                  >
-                    改为跟随全局
-                  </button>
+                  >{t("改为跟随全局")}</button>
                 )}
               </Label>
               <Slider
@@ -161,21 +154,17 @@ export default function AssistantsView({
               />
             </div>
             <div>
-              <Label className="mb-1.5 block text-xs text-zinc-500">
-                人设提示词（留空跟随全局，支持 {'{{date}}'} {'{{time}}'} {'{{model}}'} 变量）
-              </Label>
+              <Label className="mb-1.5 block text-xs text-zinc-500">{t("人设提示词（留空跟随全局，支持")}{'{{date}}'} {'{{time}}'} {'{{model}}'}{t("变量）")}</Label>
               <Textarea
                 value={draft.systemPrompt}
                 onChange={(e) => setDraft((d) => ({ ...d, systemPrompt: e.target.value }))}
                 rows={4}
-                placeholder="例如：你是一名专业翻译，把所有输入翻译成地道的英文……"
+                placeholder={t("例如：你是一名专业翻译，把所有输入翻译成地道的英文……")}
                 className="border-zinc-800 bg-zinc-950 text-sm text-zinc-100"
               />
             </div>
             <div>
-              <Label className="mb-1.5 block text-xs text-zinc-500">
-                插件权限（不选表示全部可用；MCP 工具单独在设置中管理）
-              </Label>
+              <Label className="mb-1.5 block text-xs text-zinc-500">{t("插件权限（不选表示全部可用；MCP 工具单独在设置中管理）")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {PLUGINS.map((p) => {
                   const on = draft.pluginIds.includes(p.id);
@@ -189,16 +178,14 @@ export default function AssistantsView({
                           : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600'
                       }`}
                     >
-                      {p.name}
+                      {t(p.name)}
                     </button>
                   );
                 })}
               </div>
             </div>
             <Button onClick={save} disabled={!draft.name.trim()} className="bg-indigo-600 hover:bg-indigo-500">
-              <Check className="mr-1 h-4 w-4" />
-              保存
-            </Button>
+              <Check className="mr-1 h-4 w-4" />{t("保存")}</Button>
           </div>
         )}
 
@@ -216,15 +203,13 @@ export default function AssistantsView({
                 <div className="mb-2 flex items-center gap-2.5">
                   <span className="text-2xl">{a.emoji}</span>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium text-zinc-100">{a.name}</div>
+                    <div className="truncate font-medium text-zinc-100">{t(a.name)}</div>
                     <div className="truncate font-mono text-[11px] text-zinc-500">
                       {a.model || '跟随全局模型'}
                     </div>
                   </div>
                   {active && (
-                    <Badge className="bg-indigo-600/20 text-[10px] text-indigo-300 hover:bg-indigo-600/20">
-                      当前
-                    </Badge>
+                    <Badge className="bg-indigo-600/20 text-[10px] text-indigo-300 hover:bg-indigo-600/20">{t("当前")}</Badge>
                   )}
                 </div>
                 <p className="mb-3 line-clamp-2 min-h-[2.5em] text-xs leading-relaxed text-zinc-500">
@@ -237,9 +222,7 @@ export default function AssistantsView({
                       variant="outline"
                       className="h-7 flex-1 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
                       onClick={() => setActiveId(a.id)}
-                    >
-                      设为当前
-                    </Button>
+                    >{t("设为当前")}</Button>
                   )}
                   <Button
                     size="sm"

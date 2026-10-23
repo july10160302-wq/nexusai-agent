@@ -30,11 +30,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: ${{ matrix.command }}
       - uses: actions/upload-artifact@v4
         with:
           name: nexusai-${{ matrix.os }}
-          path: release/*
+          path: |
+            release/*.exe
+            release/*.blockmap
+            release/*.dmg
+            release/*.AppImage
+            release/*.deb
           if-no-files-found: error
 
   android:
@@ -55,8 +61,10 @@ jobs:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
           accept-android-sdk-licenses: true
       - run: npm ci
+      - run: npm test
       - run: npm run build
       - run: npx cap add android
+      - run: node scripts/configure-android.cjs
       - run: npx cap sync android
       - run: chmod +x android/gradlew && android/gradlew --project-dir android assembleDebug
       - uses: actions/upload-artifact@v4
@@ -76,6 +84,7 @@ jobs:
           path: artifacts
       - uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ contains(github.ref_name, 'preview') }}
           files: |
             artifacts/nexusai-windows-latest/NexusAI-Setup-*.exe
             artifacts/nexusai-windows-latest/NexusAI-Setup-*.exe.blockmap
