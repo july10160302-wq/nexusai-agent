@@ -26,7 +26,7 @@ function createWindow() {
     height: 920,
     minWidth: 400,
     minHeight: 640,
-    backgroundColor: '#09090b',
+    backgroundColor: '#ffffff',
     title: 'NexusAI',
     webPreferences: {
       contextIsolation: true,

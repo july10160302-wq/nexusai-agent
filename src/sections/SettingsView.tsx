@@ -124,16 +124,16 @@ export default function SettingsView({
     <div className="h-full overflow-y-auto px-6 py-5">
       <div className="mx-auto max-w-2xl space-y-6 pb-10">
         <div className="flex items-center gap-3">
-          <Settings2 className="h-5 w-5 text-indigo-400" />
+          <Settings2 className="h-5 w-5 text-zinc-700" />
           <div>
-            <h1 className="text-lg font-semibold text-zinc-100">{t("设置")}</h1>
+            <h1 className="text-lg font-semibold text-zinc-900">{t("设置")}</h1>
             <p className="text-sm text-zinc-500">{t("模型 API、审批模式、工作区与 MCP 服务器")}</p>
           </div>
         </div>
 
         {/* API */}
-        <section className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="text-sm font-semibold text-zinc-200">{t("模型 API")}</h2>
+        <section className="space-y-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+          <h2 className="text-sm font-semibold text-zinc-800">{t("模型 API")}</h2>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => {
               const active = settings.baseUrl === p.baseUrl;
@@ -143,8 +143,8 @@ export default function SettingsView({
                   onClick={() => patch({ baseUrl: p.baseUrl, model: p.model })}
                   className={`rounded-lg border px-3 py-1.5 text-[13px] transition ${
                     active
-                      ? 'border-indigo-600 bg-indigo-600/15 text-indigo-300'
-                      : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-600'
+                      ? 'border-zinc-400 bg-zinc-900/15 text-zinc-700'
+                      : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
                   }`}
                 >
                   {t(p.name)}
@@ -153,27 +153,27 @@ export default function SettingsView({
             })}
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">{t("API 地址（Base URL）")}</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-700">{t("API 地址（Base URL）")}</Label>
             <Input
               value={settings.baseUrl}
               onChange={(e) => patch({ baseUrl: e.target.value })}
               placeholder="https://api.moonshot.cn/v1"
-              className="border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
+              className="border-zinc-200 bg-white font-mono text-sm text-zinc-900"
             />
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">API Key</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-700">API Key</Label>
             <Input
               type="password"
               value={settings.apiKey}
               onChange={(e) => patch({ apiKey: e.target.value })}
               placeholder="sk-..."
-              className="border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
+              className="border-zinc-200 bg-white font-mono text-sm text-zinc-900"
             />
-            <p className="mt-1 text-[11px] text-zinc-600">{t("密钥只保存在本机浏览器 localStorage，不会上传到任何服务器")}</p>
+            <p className="mt-1 text-[11px] text-zinc-500">{t("密钥只保存在本机浏览器 localStorage，不会上传到任何服务器")}</p>
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">{t("模型名称")}</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-700">{t("模型名称")}</Label>
             <div className="mb-2 flex items-center gap-2">
               <button className="nexus-button" disabled={modelsBusy} onClick={async()=>{ setModelsBusy(true); try { setModels(await listModels(settings)); } catch(e) {setTestResult({ok:false,text:String(e)})} finally {setModelsBusy(false)} }}>{modelsBusy ? t('加载中…') : t('获取模型列表', 'Fetch models')}</button>
               {models.length > 0 && <select aria-label={t('模型名称')} className="nexus-input min-w-0" value={settings.model} onChange={e=>patch({model:e.target.value})}><option value={settings.model}>{settings.model}</option>{models.filter(m=>m!==settings.model).map(m=><option key={m}>{m}</option>)}</select>}
@@ -182,12 +182,12 @@ export default function SettingsView({
               value={settings.model}
               onChange={(e) => patch({ model: e.target.value })}
               placeholder="kimi-k2-0905-preview"
-              className="border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
+              className="border-zinc-200 bg-white font-mono text-sm text-zinc-900"
             />
           </div>
-          <label className="block text-sm text-zinc-300">{t('请求超时（秒）', 'Request timeout (seconds)')}<Input type="number" min={15} max={600} value={settings.requestTimeout} onChange={e=>patch({requestTimeout:Math.min(600,Math.max(15,Number(e.target.value)||120))})} className="mt-2 border-zinc-800 bg-zinc-950"/></label>
+          <label className="block text-sm text-zinc-700">{t('请求超时（秒）', 'Request timeout (seconds)')}<Input type="number" min={15} max={600} value={settings.requestTimeout} onChange={e=>patch({requestTimeout:Math.min(600,Math.max(15,Number(e.target.value)||120))})} className="mt-2 border-zinc-200 bg-white"/></label>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">{t("温度（Temperature）：")}{settings.temperature.toFixed(1)}
+            <Label className="mb-1.5 block text-sm text-zinc-700">{t("温度（Temperature）：")}{settings.temperature.toFixed(1)}
             </Label>
             <Slider
               value={[settings.temperature]}
@@ -198,7 +198,7 @@ export default function SettingsView({
             />
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">{t("推理强度（Reasoning Effort，仅推理模型生效）")}</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-700">{t("推理强度（Reasoning Effort，仅推理模型生效）")}</Label>
             <div className="flex gap-2">
               {(
                 [
@@ -214,8 +214,8 @@ export default function SettingsView({
                   onClick={() => patch({ reasoningEffort: v })}
                   className={`flex-1 rounded-lg border px-3 py-1.5 text-[13px] transition ${
                     settings.reasoningEffort === v
-                      ? 'border-indigo-600 bg-indigo-600/15 text-indigo-300'
-                      : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-600'
+                      ? 'border-zinc-400 bg-zinc-900/15 text-zinc-700'
+                      : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
                   }`}
                 >
                   {t(label)}
@@ -224,19 +224,19 @@ export default function SettingsView({
             </div>
           </div>
           <div>
-            <Label className="mb-1.5 block text-sm text-zinc-300">{t("系统提示词（支持")}{'{{date}}'} {'{{time}}'} {'{{model}}'}{t("变量）")}</Label>
+            <Label className="mb-1.5 block text-sm text-zinc-700">{t("系统提示词（支持")}{'{{date}}'} {'{{time}}'} {'{{model}}'}{t("变量）")}</Label>
             <Textarea
               value={settings.systemPrompt}
               onChange={(e) => patch({ systemPrompt: e.target.value })}
               rows={6}
-              className="border-zinc-800 bg-zinc-950 text-sm text-zinc-100"
+              className="border-zinc-200 bg-white text-sm text-zinc-900"
             />
           </div>
-          <div className="flex items-center gap-3 border-t border-zinc-800 pt-4">
+          <div className="flex items-center gap-3 border-t border-zinc-200 pt-4">
             <Button
               onClick={runTest}
               disabled={testing || !settings.baseUrl}
-              className="bg-indigo-600 hover:bg-indigo-500"
+              className="bg-zinc-900 hover:bg-zinc-900"
             >
               {testing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -246,7 +246,7 @@ export default function SettingsView({
             {testResult && (
               <span
                 className={`flex items-center gap-1.5 text-sm ${
-                  testResult.ok ? 'text-emerald-400' : 'text-red-400'
+                  testResult.ok ? 'text-emerald-700' : 'text-red-700'
                 }`}
               >
                 {testResult.ok ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
@@ -257,9 +257,9 @@ export default function SettingsView({
         </section>
 
         {/* approval mode */}
-        <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-            <ShieldCheck className="h-4 w-4 text-indigo-400" />{t("工具审批模式")}</h2>
+        <section className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-800">
+            <ShieldCheck className="h-4 w-4 text-zinc-700" />{t("工具审批模式")}</h2>
           <div className="space-y-2">
             {APPROVAL_OPTIONS.map((o) => (
               <button
@@ -267,19 +267,19 @@ export default function SettingsView({
                 onClick={() => patch({ approvalMode: o.value })}
                 className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition ${
                   settings.approvalMode === o.value
-                    ? 'border-indigo-600 bg-indigo-600/10'
-                    : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
+                    ? 'border-zinc-400 bg-zinc-900/10'
+                    : 'border-zinc-200 bg-white hover:border-zinc-300'
                 }`}
               >
                 <div
                   className={`mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 ${
                     settings.approvalMode === o.value
-                      ? 'border-indigo-500 bg-indigo-500'
-                      : 'border-zinc-600'
+                      ? 'border-zinc-400 bg-zinc-900'
+                      : 'border-zinc-300'
                   }`}
                 />
                 <div>
-                  <div className="text-sm text-zinc-200">{t(o.label)}</div>
+                  <div className="text-sm text-zinc-800">{t(o.label)}</div>
                   <div className="text-xs text-zinc-500">{t(o.desc)}</div>
                 </div>
               </button>
@@ -288,50 +288,50 @@ export default function SettingsView({
         </section>
 
         {/* workspace */}
-        <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-            <FolderOpen className="h-4 w-4 text-indigo-400" />{t("工作区文件夹")}</h2>
+        <section className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-800">
+            <FolderOpen className="h-4 w-4 text-zinc-700" />{t("工作区文件夹")}</h2>
           <p className="text-xs leading-relaxed text-zinc-500">{t("绑定一个本地文件夹后，大模型可以用工作区文件插件在里面读写代码和文档（Codex 式工作区）。出于浏览器安全限制，刷新页面后需要重新授权一次。")}</p>
           <div className="flex items-center gap-3">
             <Button
               onClick={pickWs}
               variant="outline"
-              className="border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800"
+              className="border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100"
             >
               <FolderOpen className="mr-2 h-4 w-4" />
               {workspaceName ? '重新选择文件夹' : '选择文件夹'}
             </Button>
             {workspaceName && (
-              <span className="flex items-center gap-1.5 text-sm text-emerald-400">
+              <span className="flex items-center gap-1.5 text-sm text-emerald-700">
                 <CheckCircle2 className="h-4 w-4" />{t("已绑定：")}{workspaceName}
               </span>
             )}
           </div>
-          {wsError && <p className="text-xs text-red-400">{wsError}</p>}
+          {wsError && <p className="text-xs text-red-700">{wsError}</p>}
         </section>
 
         {/* MCP servers */}
-        <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-            <Server className="h-4 w-4 text-indigo-400" />{t("MCP 服务器")}</h2>
+        <section className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-800">
+            <Server className="h-4 w-4 text-zinc-700" />{t("MCP 服务器")}</h2>
           <p className="text-xs leading-relaxed text-zinc-500">{t("接入任何 MCP（Model Context Protocol）服务器，它的工具会自动出现在大模型的工具箱里。填写 Streamable HTTP 地址（本地或远程均可，需允许跨域）。")}</p>
 
           {settings.mcpServers.map((s) => (
-            <div key={s.id} className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-              <Input aria-label="MCP bearer token" type="password" autoComplete="off" value={s.token || ''} onChange={e=>patchServer(s.id,{token:e.target.value})} placeholder={t('认证密钥（可选）', 'Bearer token (optional)')} className="mb-2 border-zinc-700 bg-zinc-900"/>
+            <div key={s.id} className="rounded-xl border border-zinc-200 bg-white p-3">
+              <Input aria-label="MCP bearer token" type="password" autoComplete="off" value={s.token || ''} onChange={e=>patchServer(s.id,{token:e.target.value})} placeholder={t('认证密钥（可选）', 'Bearer token (optional)')} className="mb-2 border-zinc-200 bg-zinc-50"/>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={s.enabled}
                   onCheckedChange={(v) => patchServer(s.id, { enabled: v })}
                 />
-                <span className="text-sm font-medium text-zinc-200">{s.name}</span>
+                <span className="text-sm font-medium text-zinc-800">{s.name}</span>
                 <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-zinc-500">
                   {s.url}
                 </span>
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-zinc-400 hover:text-zinc-200"
+                  className="h-7 w-7 text-zinc-600 hover:text-zinc-800"
                   title={t("连接并刷新工具列表")}
                   disabled={mcpBusy[s.id]}
                   onClick={() => probeServer(s)}
@@ -345,7 +345,7 @@ export default function SettingsView({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-zinc-500 hover:text-red-400"
+                  className="h-7 w-7 text-zinc-500 hover:text-red-700"
                   onClick={() =>
                     patch({ mcpServers: settings.mcpServers.filter((x) => x.id !== s.id) })
                   }
@@ -354,7 +354,7 @@ export default function SettingsView({
                 </Button>
               </div>
               {mcpStatus[s.id] && (
-                <p className="mt-1.5 pl-11 text-xs text-zinc-400">{mcpStatus[s.id]}</p>
+                <p className="mt-1.5 pl-11 text-xs text-zinc-600">{mcpStatus[s.id]}</p>
               )}
             </div>
           ))}
@@ -364,18 +364,18 @@ export default function SettingsView({
               value={mcpName}
               onChange={(e) => setMcpName(e.target.value)}
               placeholder={t("名称，例如 filesystem")}
-              className="h-9 border-zinc-800 bg-zinc-950 text-sm text-zinc-100"
+              className="h-9 border-zinc-200 bg-white text-sm text-zinc-900"
             />
             <Input
               value={mcpUrl}
               onChange={(e) => setMcpUrl(e.target.value)}
               placeholder="http://127.0.0.1:3000/mcp"
-              className="h-9 flex-1 border-zinc-800 bg-zinc-950 font-mono text-sm text-zinc-100"
+              className="h-9 flex-1 border-zinc-200 bg-white font-mono text-sm text-zinc-900"
             />
             <Button
               onClick={addMcpServer}
               disabled={!mcpName.trim() || !mcpUrl.trim()}
-              className="h-9 bg-indigo-600 hover:bg-indigo-500"
+              className="h-9 bg-zinc-900 hover:bg-zinc-900"
             >
               <Plus className="h-4 w-4" />
             </Button>

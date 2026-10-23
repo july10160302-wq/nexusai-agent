@@ -77,7 +77,7 @@ function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
   return (
     <div className="relative my-2">
       <pre
-        className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950 p-3 pr-10 text-[13px] leading-relaxed"
+        className="overflow-x-auto rounded-lg border border-zinc-200 bg-white p-3 pr-10 text-[13px] leading-relaxed"
         {...props}
       />
       <button
@@ -86,10 +86,10 @@ function CodeBlock(props: React.HTMLAttributes<HTMLPreElement>) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        className="absolute right-2 top-2 rounded bg-zinc-800 p-1 text-zinc-400 hover:text-zinc-200"
+        className="absolute right-2 top-2 rounded bg-zinc-100 p-1 text-zinc-600 hover:text-zinc-800"
         title={t("复制代码")}
       >
-        {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? <Check className="h-3.5 w-3.5 text-emerald-700" /> : <Copy className="h-3.5 w-3.5" />}
       </button>
     </div>
   );
@@ -100,16 +100,16 @@ const mdComponents = {
   code: (props: React.HTMLAttributes<HTMLElement> & { className?: string }) => {
     const isBlock = /language-/.test(props.className || '');
     return isBlock ? (
-      <code className="text-emerald-300">{props.children}</code>
+      <code className="text-emerald-700">{props.children}</code>
     ) : (
-      <code className="rounded bg-zinc-800 px-1 py-0.5 text-[0.85em] text-emerald-300">
+      <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em] text-emerald-700">
         {props.children}
       </code>
     );
   },
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
-      className="text-indigo-400 underline underline-offset-2 hover:text-indigo-300"
+      className="text-zinc-700 underline underline-offset-2 hover:text-zinc-700"
       target="_blank"
       rel="noreferrer"
       {...props}
@@ -130,10 +130,10 @@ const mdComponents = {
     </div>
   ),
   th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
-    <th className="border border-zinc-700 bg-zinc-800 px-2 py-1 text-left" {...props} />
+    <th className="border border-zinc-200 bg-zinc-100 px-2 py-1 text-left" {...props} />
   ),
   td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
-    <td className="border border-zinc-700 px-2 py-1" {...props} />
+    <td className="border border-zinc-200 px-2 py-1" {...props} />
   ),
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1 className="mb-2 mt-3 text-lg font-bold" {...props} />
@@ -145,7 +145,7 @@ const mdComponents = {
     <h3 className="mb-1.5 mt-2.5 text-sm font-bold" {...props} />
   ),
   blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
-    <blockquote className="my-2 border-l-2 border-zinc-600 pl-3 text-zinc-400" {...props} />
+    <blockquote className="my-2 border-l-2 border-zinc-300 pl-3 text-zinc-600" {...props} />
   ),
 };
 
@@ -188,11 +188,11 @@ function WriteDiffPreview({ argsJson }: { argsJson: string }) {
 
   if (!diff) return null;
   return (
-    <div className="mb-2 max-h-48 overflow-auto rounded bg-zinc-950 p-2 font-mono text-[11px] leading-relaxed">
+    <div className="mb-2 max-h-48 overflow-auto rounded bg-white p-2 font-mono text-[11px] leading-relaxed">
       {isNew && <div className="mb-1 text-zinc-500">{t("（新文件）")}</div>}
       {diff.map((l, i) =>
         l.type === 'gap' ? (
-          <div key={i} className="text-zinc-600">
+          <div key={i} className="text-zinc-500">
             ⋮
           </div>
         ) : (
@@ -200,9 +200,9 @@ function WriteDiffPreview({ argsJson }: { argsJson: string }) {
             key={i}
             className={
               l.type === 'add'
-                ? 'whitespace-pre-wrap text-emerald-400'
+                ? 'whitespace-pre-wrap text-emerald-700'
                 : l.type === 'del'
-                  ? 'whitespace-pre-wrap text-red-400 line-through'
+                  ? 'whitespace-pre-wrap text-red-700 line-through'
                   : 'whitespace-pre-wrap text-zinc-500'
             }
           >
@@ -236,29 +236,29 @@ function ToolCallCard({
     <div
       className={`my-2 overflow-hidden rounded-lg border text-[13px] ${
         tc.status === 'pending'
-          ? 'border-amber-700/60 bg-amber-950/20'
-          : 'border-zinc-800 bg-zinc-900/70'
+          ? 'border-amber-700/60 bg-amber-50'
+          : 'border-zinc-200 bg-zinc-50/70'
       }`}
     >
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-zinc-800/60"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-zinc-100/60"
       >
         {open ? (
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
         ) : (
           <ChevronRight className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
         )}
-        <Wrench className="h-3.5 w-3.5 shrink-0 text-indigo-400" />
-        <span className="font-mono text-zinc-200">{tc.name}</span>
-        <span className="hidden rounded bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-400 sm:inline">
+        <Wrench className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        <span className="font-mono text-zinc-800">{tc.name}</span>
+        <span className="hidden rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-zinc-600 sm:inline">
           {toolSourceName(tc.name)}
         </span>
         <span className="ml-auto shrink-0">
-          {tc.status === 'pending' && <ShieldQuestion className="h-3.5 w-3.5 text-amber-400" />}
-          {tc.status === 'running' && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400" />}
-          {tc.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />}
-          {tc.status === 'error' && <XCircle className="h-3.5 w-3.5 text-red-400" />}
+          {tc.status === 'pending' && <ShieldQuestion className="h-3.5 w-3.5 text-amber-700" />}
+          {tc.status === 'running' && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-700" />}
+          {tc.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />}
+          {tc.status === 'error' && <XCircle className="h-3.5 w-3.5 text-red-700" />}
           {tc.status === 'rejected' && <XCircle className="h-3.5 w-3.5 text-zinc-500" />}
         </span>
       </button>
@@ -277,7 +277,7 @@ function ToolCallCard({
             <Button
               size="sm"
               variant="outline"
-              className="h-7 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
+              className="h-7 border-zinc-200 bg-transparent text-xs text-zinc-700 hover:bg-zinc-100"
               onClick={() => onResolve(tc.id, false)}
             >
               <X className="mr-1 h-3 w-3" />{t("拒绝")}</Button>
@@ -286,17 +286,17 @@ function ToolCallCard({
       )}
 
       {open && (
-        <div className="space-y-2 border-t border-zinc-800 px-3 py-2">
+        <div className="space-y-2 border-t border-zinc-200 px-3 py-2">
           <div>
             <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">{t("参数")}</div>
-            <pre className="overflow-x-auto rounded bg-zinc-950 p-2 font-mono text-xs text-zinc-300">
+            <pre className="overflow-x-auto rounded bg-white p-2 font-mono text-xs text-zinc-700">
               {prettyArgs}
             </pre>
           </div>
           {tc.result !== undefined && (
             <div>
               <div className="mb-1 text-[11px] uppercase tracking-wide text-zinc-500">{t("结果")}</div>
-              <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded bg-zinc-950 p-2 font-mono text-xs text-zinc-300">
+              <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded bg-white p-2 font-mono text-xs text-zinc-700">
                 {tc.result}
               </pre>
             </div>
@@ -416,7 +416,7 @@ export default function ChatView({
 
   const suggestions =
     MODEL_SUGGESTIONS.find(([h]) => settings.baseUrl.includes(h))?.[1] ?? [];
-  const modelOptions = Array.from(new Set([effModel, ...suggestions].filter(Boolean)));
+  const modelOptions = Array.from(new Set([effModel, 'gpt-6.1-sol', ...suggestions].filter(Boolean)));
 
   const cmdMatches =
     input.startsWith('/') && !input.includes(' ')
@@ -950,39 +950,42 @@ export default function ChatView({
     <div className="nexus-chat relative flex h-full min-h-0 flex-col">
       {/* header */}
       <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-3 text-xs">
-        <div className="flex rounded-full bg-zinc-800 p-1" role="group" aria-label="Chat mode">
-          {(['chat','agent'] as const).map(mode => <button key={mode} disabled={running} onClick={()=>setSettings(s=>({...s,chatMode:mode}))} className={`rounded-full px-4 py-1.5 transition ${settings.chatMode === mode ? 'bg-zinc-600 text-white' : 'text-zinc-400'}`}>{t(mode === 'chat' ? '聊天' : '智能体')}</button>)}
+        <div className="flex rounded-full bg-zinc-100 p-1" role="group" aria-label="Chat mode">
+          {(['chat','agent'] as const).map(mode => <button key={mode} disabled={running} onClick={()=>setSettings(s=>({...s,chatMode:mode}))} className={`rounded-full px-4 py-1.5 transition ${settings.chatMode === mode ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-600'}`}>{t(mode === 'chat' ? '聊天' : '智能体')}</button>)}
         </div>
-        <span role="status" className="min-w-0 truncate text-zinc-400">{running ? phase + ' · ' + elapsed.toFixed(1) + 's' : settings.chatMode === 'chat' ? t('直接对话，不加载工具', 'Direct chat · Tools off') : t('工具与审批已启用', 'Tools & approvals enabled')}</span>
+        <span role="status" className="min-w-0 truncate text-zinc-600">{running ? phase + ' · ' + elapsed.toFixed(1) + 's' : settings.chatMode === 'chat' ? t('直接对话，不加载工具', 'Direct chat · Tools off') : t('工具与审批已启用', 'Tools & approvals enabled')}</span>
       </div>
-      <div className="relative flex items-center gap-2 border-b border-zinc-800 px-3 py-3 sm:px-5">
+      <div className="relative flex items-center gap-2 border-b border-zinc-200 px-3 py-3 sm:px-5">
         {assistant ? (
           <span className="text-base" title={assistant.name}>
             {assistant.emoji}
           </span>
         ) : (
-          <Bot className="h-4 w-4 text-indigo-400" />
+          <Bot className="h-4 w-4 text-zinc-700" />
         )}
-        <span className="min-w-0 truncate whitespace-nowrap text-sm font-medium text-zinc-200">
+        <span className="min-w-0 truncate whitespace-nowrap text-sm font-medium text-zinc-800">
           {conversation?.title || t('新对话')}
         </span>
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <select
+          <input
+            aria-label={t('模型名称')}
+            list="nexus-model-options"
             value={effModel}
             onChange={(e) => {
               const v = e.target.value;
               if (assistant?.model) onUpdateAssistant(assistant.id, { model: v });
               else setSettings((s) => ({ ...s, model: v }));
             }}
-            className="max-w-28 truncate rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 outline-none sm:max-w-44"
+            className="max-w-28 truncate rounded-md border border-zinc-200 bg-zinc-100 px-2 py-1 text-xs text-zinc-700 outline-none sm:max-w-44"
             title={t("快速切换模型")}
-          >
+          />
+          <datalist id="nexus-model-options">
             {modelOptions.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
             ))}
-          </select>
+          </datalist>
 
           {conversation && conversation.messages.length > 0 && (
             <button
@@ -990,7 +993,7 @@ export default function ChatView({
                 setSearchOpen(!searchOpen);
                 if (searchOpen) setSearchQuery('');
               }}
-              className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
+              className="rounded-md border border-zinc-200 bg-zinc-100 p-1.5 text-zinc-700 hover:bg-zinc-200"
               title={t("搜索对话内容")}
             >
               <Search className="h-3.5 w-3.5" />
@@ -1000,7 +1003,7 @@ export default function ChatView({
           {conversation && (
             <button
               onClick={() => setShowActivity(true)}
-              className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
+              className="rounded-md border border-zinc-200 bg-zinc-100 p-1.5 text-zinc-700 hover:bg-zinc-200"
               title={t("活动日志")}
             >
               <Activity className="h-3.5 w-3.5" />
@@ -1010,20 +1013,20 @@ export default function ChatView({
           {conversation && (
             <button
               onClick={() => setShowPluginPicker(!showPluginPicker)}
-              className="rounded-md border border-zinc-700 bg-zinc-800 p-1.5 text-zinc-300 hover:bg-zinc-700"
+              className="rounded-md border border-zinc-200 bg-zinc-100 p-1.5 text-zinc-700 hover:bg-zinc-200"
               title={t("选择本对话可用的插件")}
             >
               <Puzzle className="h-3.5 w-3.5" />
             </button>
           )}
 
-          <Badge variant="secondary" className="hidden bg-zinc-800 text-zinc-300 sm:inline-flex">
+          <Badge variant="secondary" className="hidden bg-zinc-100 text-zinc-700 sm:inline-flex">
             {enabledCount}{t("插件")}</Badge>
           {conversation && conversation.messages.length > 0 && (
             <Button
               size="icon"
               variant="ghost"
-              className="h-7 w-7 text-zinc-400 hover:text-zinc-200"
+              className="h-7 w-7 text-zinc-600 hover:text-zinc-800"
               title={t("导出为 Markdown")}
               onClick={exportMarkdown}
             >
@@ -1036,11 +1039,11 @@ export default function ChatView({
         {showPluginPicker && conversation && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setShowPluginPicker(false)} />
-            <div className="absolute right-3 top-full z-20 mt-1 w-60 rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-xl">
+            <div className="absolute right-3 top-full z-20 mt-1 w-60 rounded-xl border border-zinc-200 bg-zinc-50 p-2 shadow-xl">
               <div className="mb-1 flex items-center justify-between px-2 py-1">
-                <span className="text-xs text-zinc-400">{t("本对话可用插件")}</span>
+                <span className="text-xs text-zinc-600">{t("本对话可用插件")}</span>
                 <button
-                  className="text-[11px] text-indigo-400 hover:underline"
+                  className="text-[11px] text-zinc-700 hover:underline"
                   onClick={() => onUpdate(conversation.id, (c) => ({ ...c, pluginFilter: undefined }))}
                 >{t("重置")}</button>
               </div>
@@ -1049,11 +1052,11 @@ export default function ChatView({
                   <button
                     key={p.id}
                     onClick={() => toggleConvPlugin(p.id)}
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] text-zinc-300 hover:bg-zinc-800"
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] text-zinc-700 hover:bg-zinc-100"
                   >
                     <span
                       className={`flex h-4 w-4 items-center justify-center rounded border ${
-                        pluginOn(p.id) ? 'border-indigo-500 bg-indigo-600' : 'border-zinc-600'
+                        pluginOn(p.id) ? 'border-zinc-400 bg-zinc-900' : 'border-zinc-300'
                       }`}
                     >
                       {pluginOn(p.id) && <Check className="h-3 w-3 text-white" />}
@@ -1069,7 +1072,7 @@ export default function ChatView({
 
       {/* search bar */}
       {searchOpen && (
-        <div className="flex items-center gap-2 border-b border-zinc-800 px-3 py-2 sm:px-5">
+        <div className="flex items-center gap-2 border-b border-zinc-200 px-3 py-2 sm:px-5">
           <Search className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
           <input
             autoFocus
@@ -1082,15 +1085,15 @@ export default function ChatView({
               if (e.key === 'Enter') jumpToMatch(searchIdx + (e.shiftKey ? -1 : 0));
             }}
             placeholder={t("搜索对话内容，Enter 跳转…")}
-            className="min-w-0 flex-1 bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-600"
+            className="min-w-0 flex-1 bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-500"
           />
           <span className="shrink-0 text-xs text-zinc-500">
             {searchMatches.length ? `${Math.min(searchIdx + 1, searchMatches.length)}/${searchMatches.length}` : '0/0'}
           </span>
-          <button onClick={() => jumpToMatch(searchIdx - 1)} className="p-1 text-zinc-400 hover:text-zinc-200">
+          <button onClick={() => jumpToMatch(searchIdx - 1)} className="p-1 text-zinc-600 hover:text-zinc-800">
             <ChevronUp className="h-4 w-4" />
           </button>
-          <button onClick={() => jumpToMatch(searchIdx + 1)} className="p-1 text-zinc-400 hover:text-zinc-200">
+          <button onClick={() => jumpToMatch(searchIdx + 1)} className="p-1 text-zinc-600 hover:text-zinc-800">
             <ChevronDown className="h-4 w-4" />
           </button>
           <button
@@ -1098,7 +1101,7 @@ export default function ChatView({
               setSearchOpen(false);
               setSearchQuery('');
             }}
-            className="p-1 text-zinc-400 hover:text-zinc-200"
+            className="p-1 text-zinc-600 hover:text-zinc-800"
           >
             <X className="h-4 w-4" />
           </button>
@@ -1108,13 +1111,13 @@ export default function ChatView({
       {/* messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
         {!apiReady && (
-          <div className="mx-auto mb-4 flex max-w-xl items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+          <div className="mx-auto mb-4 flex max-w-xl items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-50 px-4 py-3 text-sm text-amber-200">
             <KeyRound className="h-4 w-4 shrink-0" />
             <span>{t("还没有配置大模型 API。")}</span>
             <Button
               size="sm"
               variant="outline"
-              className="ml-auto border-amber-700 bg-transparent text-amber-200 hover:bg-amber-900/40"
+              className="ml-auto border-amber-700 bg-transparent text-amber-200 hover:bg-amber-50"
               onClick={goSettings}
             >{t("去设置")}</Button>
           </div>
@@ -1122,10 +1125,10 @@ export default function ChatView({
 
         {messages.length === 0 ? (
           <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/20 text-3xl">
-              {assistant?.emoji ?? <Bot className="h-7 w-7 text-indigo-400" />}
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-900/20 text-3xl">
+              {assistant?.emoji ?? <Bot className="h-7 w-7 text-zinc-700" />}
             </div>
-            <h2 className="mb-1 text-xl font-semibold text-zinc-100">
+            <h2 className="mb-1 text-xl font-semibold text-zinc-900">
               {t('今天想做些什么？')}
             </h2>
             <p className="mb-6 text-sm text-zinc-500">{t("工作区文件 · 工具审批 · 任务计划 · 代码执行 · MCP 生态")}</p>
@@ -1134,13 +1137,13 @@ export default function ChatView({
                 <button
                   key={t(q)}
                   onClick={() => send(t(q))}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left text-[13px] text-zinc-300 transition hover:border-indigo-700 hover:bg-zinc-900"
+                  className="rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-left text-[13px] text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
                 >
                   {t(q)}
                 </button>
               ))}
             </div>
-            <p className="mt-4 text-[11px] text-zinc-600">{t("输入 / 呼出快捷命令 · 点击 @ 引用工作区文件 · 支持语音输入")}</p>
+            <p className="mt-4 text-[11px] text-zinc-500">{t("输入 / 呼出快捷命令 · 点击 @ 引用工作区文件 · 支持语音输入")}</p>
           </div>
         ) : (
           <div className="mx-auto max-w-3xl space-y-5">
@@ -1150,7 +1153,7 @@ export default function ChatView({
                 ref={(el) => {
                   if (el) msgEls.current.set(m.id, el);
                 }}
-                className={currentMatchId === m.id ? 'rounded-xl ring-2 ring-indigo-500' : ''}
+                className={currentMatchId === m.id ? 'rounded-xl ring-2 ring-zinc-400' : ''}
               >
                 {m.role === 'user' ? (
                   <div className="group flex flex-col items-end">
@@ -1161,24 +1164,24 @@ export default function ChatView({
                           value={editText}
                           onChange={(e) => setEditText(e.target.value)}
                           rows={3}
-                          className="border-indigo-700 bg-zinc-900 text-sm text-zinc-100"
+                          className="border-zinc-400 bg-zinc-50 text-sm text-zinc-900"
                         />
                         <div className="mt-1.5 flex justify-end gap-1.5">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 border-zinc-700 bg-transparent text-xs text-zinc-300 hover:bg-zinc-800"
+                            className="h-7 border-zinc-200 bg-transparent text-xs text-zinc-700 hover:bg-zinc-100"
                             onClick={() => setEditingId(null)}
                           >{t("取消")}</Button>
                           <Button
                             size="sm"
-                            className="h-7 bg-indigo-600 text-xs hover:bg-indigo-500"
+                            className="h-7 bg-zinc-900 text-xs hover:bg-zinc-900"
                             onClick={() => saveEdit(m.id)}
                           >{t("保存并重新生成")}</Button>
                         </div>
                       </div>
                     ) : (
-                      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-indigo-600 px-4 py-2.5 text-sm leading-relaxed text-white sm:max-w-[80%]">
+                      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-900 px-4 py-2.5 text-sm leading-relaxed text-white sm:max-w-[80%]">
                         {m.attachments?.map((a, i) => (
                           <img key={i} src={a.dataUrl} alt={t(a.name)} className="mb-2 max-h-48 rounded-lg" />
                         ))}
@@ -1189,13 +1192,13 @@ export default function ChatView({
                       <div className="mt-1 flex gap-1 opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
                         <button
                           onClick={() => startEdit(m)}
-                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
                           title={t("编辑并重新生成")}
                         >
                           <Pencil className="h-3 w-3" />{t("编辑")}</button>
                         <button
                           onClick={() => branchFrom(m.id)}
-                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
                           title={t("从这里分支新对话")}
                         >
                           <GitBranch className="h-3 w-3" />{t("分支")}</button>
@@ -1204,10 +1207,10 @@ export default function ChatView({
                   </div>
                 ) : (
                   <div className="group flex gap-3">
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-sm">
-                      {assistant?.emoji ?? <Bot className="h-4 w-4 text-indigo-400" />}
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-sm">
+                      {assistant?.emoji ?? <Bot className="h-4 w-4 text-zinc-700" />}
                     </div>
-                    <div className="min-w-0 flex-1 text-sm text-zinc-200">
+                    <div className="min-w-0 flex-1 text-sm text-zinc-800">
                       {m.toolCalls?.map((tc) => (
                         <ToolCallCard key={tc.id} tc={tc} onResolve={resolveApproval} />
                       ))}
@@ -1218,30 +1221,30 @@ export default function ChatView({
                       )}
                       <div className="mt-1 flex items-center gap-2">
                         {m.usage && (
-                          <span className="text-[11px] text-zinc-600">
+                          <span className="text-[11px] text-zinc-500">
                             tokens ↑{m.usage.prompt} ↓{m.usage.completion}
                           </span>
                         )}
                         <span className="flex gap-1 opacity-100 transition md:opacity-0 md:group-hover:opacity-100">
                           <button
                             onClick={() => copyMessage(m)}
-                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
                             title={t("复制内容")}
                           >
                             {copiedId === m.id ? (
-                              <Check className="h-3 w-3 text-emerald-400" />
+                              <Check className="h-3 w-3 text-emerald-700" />
                             ) : (
                               <Copy className="h-3 w-3" />
                             )}{t("复制")}</button>
                           <button
                             onClick={() => regenerate(m.id)}
-                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
                             title={t("重新生成")}
                           >
                             <RotateCcw className="h-3 w-3" />{t("重新生成")}</button>
                           <button
                             onClick={() => branchFrom(m.id)}
-                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                            className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
                             title={t("从这里分支新对话")}
                           >
                             <GitBranch className="h-3 w-3" />{t("分支")}</button>
@@ -1258,13 +1261,13 @@ export default function ChatView({
 
       {/* plan panel */}
       {plan.length > 0 && (
-        <div className="border-t border-zinc-800 px-3 sm:px-5">
+        <div className="border-t border-zinc-200 px-3 sm:px-5">
           <div className="mx-auto max-w-3xl">
             <button
               onClick={() => setPlanOpen(!planOpen)}
-              className="flex w-full items-center gap-2 py-2 text-xs text-zinc-400 hover:text-zinc-200"
+              className="flex w-full items-center gap-2 py-2 text-xs text-zinc-600 hover:text-zinc-800"
             >
-              <ListChecks className="h-3.5 w-3.5 text-indigo-400" />
+              <ListChecks className="h-3.5 w-3.5 text-zinc-700" />
               <span>{t("任务计划")}{doneCount}/{plan.length}
               </span>
               <span className="ml-auto">
@@ -1276,11 +1279,11 @@ export default function ChatView({
                 {plan.map((p) => (
                   <div key={p.id} className="flex items-center gap-2 text-[13px]">
                     {p.done ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
                     ) : (
-                      <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-zinc-600" />
+                      <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-zinc-300" />
                     )}
-                    <span className={p.done ? 'text-zinc-500 line-through' : 'text-zinc-300'}>
+                    <span className={p.done ? 'text-zinc-500 line-through' : 'text-zinc-700'}>
                       {p.text}
                     </span>
                   </div>
@@ -1293,7 +1296,7 @@ export default function ChatView({
 
       {/* input */}
       <div
-        className={`nexus-composer border-t px-3 py-3 sm:px-5 ${isDragging ? 'border-indigo-500 bg-indigo-950/20' : 'border-zinc-800'}`}
+        className={`nexus-composer border-t px-3 py-3 sm:px-5 ${isDragging ? 'border-zinc-400 bg-zinc-100/20' : 'border-zinc-200'}`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -1304,14 +1307,14 @@ export default function ChatView({
         <div className="relative mx-auto max-w-3xl">
           {/* slash command palette */}
           {cmdMatches.length > 0 && (
-            <div className="absolute bottom-full mb-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 p-1.5 shadow-xl">
+            <div className="absolute bottom-full mb-2 w-full rounded-xl border border-zinc-200 bg-zinc-50 p-1.5 shadow-xl">
               {cmdMatches.map((c) => (
                 <button
                   key={c.cmd}
                   onClick={() => runCommand(c.cmd)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-zinc-800"
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-zinc-100"
                 >
-                  <span className="font-mono text-sm text-indigo-400">{c.cmd}</span>
+                  <span className="font-mono text-sm text-zinc-700">{c.cmd}</span>
                   <span className="text-xs text-zinc-500">{c.desc}</span>
                 </button>
               ))}
@@ -1322,16 +1325,16 @@ export default function ChatView({
           {showMention && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMention(false)} />
-              <div className="absolute bottom-full z-20 mb-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-xl">
+              <div className="absolute bottom-full z-20 mb-2 w-full rounded-xl border border-zinc-200 bg-zinc-50 p-2 shadow-xl">
                 <Input
                   autoFocus
                   value={mentionFilter}
                   onChange={(e) => setMentionFilter(e.target.value)}
                   placeholder={t("搜索工作区文件…")}
-                  className="mb-1.5 h-8 border-zinc-800 bg-zinc-950 text-xs text-zinc-100"
+                  className="mb-1.5 h-8 border-zinc-200 bg-white text-xs text-zinc-900"
                 />
                 <div className="max-h-48 overflow-y-auto">
-                  {mentionError && <p className="px-2 py-1.5 text-xs text-amber-400">{mentionError}</p>}
+                  {mentionError && <p className="px-2 py-1.5 text-xs text-amber-700">{mentionError}</p>}
                   {mentionFiles === null && !mentionError && (
                     <p className="px-2 py-1.5 text-xs text-zinc-500">{t("加载中…")}</p>
                   )}
@@ -1342,7 +1345,7 @@ export default function ChatView({
                       <button
                         key={f}
                         onClick={() => pickMention(f)}
-                        className="block w-full truncate rounded-lg px-2 py-1.5 text-left font-mono text-xs text-zinc-300 hover:bg-zinc-800"
+                        className="block w-full truncate rounded-lg px-2 py-1.5 text-left font-mono text-xs text-zinc-700 hover:bg-zinc-100"
                       >
                         {f}
                       </button>
@@ -1359,10 +1362,10 @@ export default function ChatView({
             <div className="mb-2 flex flex-wrap gap-2">
               {attachments.map((a, i) => (
                 <div key={i} className="relative">
-                  <img src={a.dataUrl} alt={t(a.name)} className="h-14 rounded-lg border border-zinc-700" />
+                  <img src={a.dataUrl} alt={t(a.name)} className="h-14 rounded-lg border border-zinc-200" />
                   <button
                     onClick={() => setAttachments((list) => list.filter((_, j) => j !== i))}
-                    className="absolute -right-1.5 -top-1.5 rounded-full bg-zinc-700 p-0.5 text-zinc-300 hover:bg-red-600"
+                    className="absolute -right-1.5 -top-1.5 rounded-full bg-zinc-200 p-0.5 text-zinc-700 hover:bg-red-600"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -1376,7 +1379,7 @@ export default function ChatView({
             <Button
               size="icon"
               variant="outline"
-              className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              className="h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800"
               title={t("添加图片（需要视觉模型）")}
               onClick={() => fileRef.current?.click()}
             >
@@ -1385,7 +1388,7 @@ export default function ChatView({
             <Button
               size="icon"
               variant="outline"
-              className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+              className="h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800"
               title={t("引用工作区文件")}
               onClick={openMention}
             >
@@ -1395,8 +1398,8 @@ export default function ChatView({
               <Button
                 size="icon"
                 variant="outline"
-                className={`h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 hover:bg-zinc-800 ${
-                  recording ? 'animate-pulse text-red-400' : 'text-zinc-400 hover:text-zinc-200'
+                className={`h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 hover:bg-zinc-100 ${
+                  recording ? 'animate-pulse text-red-700' : 'text-zinc-600 hover:text-zinc-800'
                 }`}
                 title={t(recording ? '停止语音输入' : '语音输入')}
                 onClick={toggleVoice}
@@ -1422,14 +1425,14 @@ export default function ChatView({
                 }
               }}
               placeholder={t(recording ? '正在聆听…' : '输入消息，/ 快捷命令，Enter 发送…')}
-              className="max-h-40 min-h-[44px] flex-1 resize-none border-zinc-800 bg-zinc-900 text-sm text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-indigo-600"
+              className="max-h-40 min-h-[44px] flex-1 resize-none border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:ring-zinc-400"
               rows={1}
             />
             {running ? (
               <Button
                 size="icon"
                 variant="outline"
-                className="h-11 w-11 shrink-0 border-zinc-700 bg-zinc-900 text-red-400 hover:bg-zinc-800"
+                className="h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 text-red-700 hover:bg-zinc-100"
                 title={t("停止（Esc）")}
                 onClick={stop}
               >
@@ -1438,7 +1441,7 @@ export default function ChatView({
             ) : (
               <Button
                 size="icon"
-                className="h-11 w-11 shrink-0 bg-indigo-600 hover:bg-indigo-500"
+                className="h-11 w-11 shrink-0 bg-zinc-900 hover:bg-zinc-900"
                 aria-label={t('发送消息', 'Send message')}
                 onClick={() => send()}
                 disabled={!input.trim() && !attachments.length}
@@ -1447,7 +1450,7 @@ export default function ChatView({
               </Button>
             )}
           </div>
-          <p className="mt-2 text-center text-[11px] text-zinc-600">
+          <p className="mt-2 text-center text-[11px] text-zinc-500">
             {lastUsage
               ? `↑${lastUsage.prompt} ↓${lastUsage.completion} tokens · `
               : ''}{t("工具调用在本地执行 · 写操作需批准后执行")}</p>
@@ -1461,13 +1464,13 @@ export default function ChatView({
             className="fixed inset-0 z-20 bg-black/40 md:hidden"
             onClick={() => setShowActivity(false)}
           />
-          <div className="absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl">
-            <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
-              <Activity className="h-4 w-4 text-indigo-400" />
-              <span className="text-sm font-medium text-zinc-200">{t("活动日志")}</span>
+          <div className="absolute inset-y-0 right-0 z-30 flex w-80 max-w-[85vw] flex-col border-l border-zinc-200 bg-white shadow-2xl">
+            <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3">
+              <Activity className="h-4 w-4 text-zinc-700" />
+              <span className="text-sm font-medium text-zinc-800">{t("活动日志")}</span>
               <span className="text-xs text-zinc-500">{activityEvents.length}{t("次工具调用")}</span>
               <button
-                className="ml-auto text-zinc-500 hover:text-zinc-300"
+                className="ml-auto text-zinc-500 hover:text-zinc-700"
                 onClick={() => setShowActivity(false)}
               >
                 <X className="h-4 w-4" />
@@ -1475,7 +1478,7 @@ export default function ChatView({
             </div>
             <div className="flex-1 overflow-y-auto p-3">
               {activityEvents.length === 0 ? (
-                <p className="px-2 py-6 text-center text-xs text-zinc-600">{t("本轮还没有工具活动")}</p>
+                <p className="px-2 py-6 text-center text-xs text-zinc-500">{t("本轮还没有工具活动")}</p>
               ) : (
                 <div className="space-y-2">
                   {activityEvents.map((ev) => (
@@ -1484,23 +1487,23 @@ export default function ChatView({
                       onClick={() =>
                         msgEls.current.get(ev.msgId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                       }
-                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/60 p-2.5 text-left transition hover:border-zinc-600"
+                      className="w-full rounded-lg border border-zinc-200 bg-zinc-50/60 p-2.5 text-left transition hover:border-zinc-300"
                     >
                       <div className="flex items-center gap-2">
                         {ev.status === 'done' ? (
-                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
                         ) : ev.status === 'error' ? (
-                          <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                          <XCircle className="h-3.5 w-3.5 shrink-0 text-red-700" />
                         ) : ev.status === 'rejected' ? (
                           <XCircle className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                         ) : (
-                          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-amber-400" />
+                          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-amber-700" />
                         )}
-                        <span className="font-mono text-xs text-zinc-200">{ev.name}</span>
-                        <span className="rounded bg-zinc-800 px-1 py-0.5 text-[10px] text-zinc-500">
+                        <span className="font-mono text-xs text-zinc-800">{ev.name}</span>
+                        <span className="rounded bg-zinc-100 px-1 py-0.5 text-[10px] text-zinc-500">
                           {toolSourceName(ev.name)}
                         </span>
-                        <span className="ml-auto shrink-0 text-[10px] text-zinc-600">
+                        <span className="ml-auto shrink-0 text-[10px] text-zinc-500">
                           {new Date(ev.ts).toLocaleTimeString('zh-CN', { hour12: false })}
                         </span>
                       </div>

@@ -88,30 +88,30 @@ body,
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #d4d4d4;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #a3a3a3;
 }
 
-html { background: #212121; color-scheme: dark; }
+html { background: #ffffff; color-scheme: light; }
 body { margin: 0; overscroll-behavior: none; font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; }
-.nexus-app { height: 100vh; height: 100dvh; background: #212121; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-.nexus-app aside { background: #171717; width: 264px; border: 0; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+.nexus-app { height: 100vh; height: 100dvh; background: #ffffff; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+.nexus-app aside { background: #f9f9f9; width: 264px; border: 0; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
 .nexus-chat > div:has(> select), .nexus-chat > div.relative { border-color: transparent; }
 .nexus-chat > div:has(> .max-w-3xl) { scroll-behavior: smooth; }
 .nexus-composer { flex-shrink: 0; border-top: 0 !important; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-.nexus-composer > div { border-radius: 26px; padding: 12px 16px 8px; background: #303030; border: 1px solid #424242; }
+.nexus-composer > div { border-radius: 26px; padding: 12px 16px 8px; background: #f4f4f4; border: 1px solid #e5e5e5; }
 .nexus-composer > div > .flex.items-end { flex-wrap: wrap; gap: 4px; }
 .nexus-composer textarea { order: -1; flex: 1 0 100%; min-height: 52px; background: transparent; border: 0; border-radius: 14px; box-shadow: none; font-size: 16px; padding: 8px 4px; }
 .nexus-composer textarea:focus-visible { box-shadow: none; outline: none; }
 .nexus-composer .flex.items-end > button { width: 38px; height: 38px; border: none; border-radius: 50%; background: transparent; }
-.nexus-composer .flex.items-end > button:last-child { margin-left: auto; background: #f0f0f0; color: #171717; }
-.nexus-chat .rounded-br-sm { border-radius: 24px; background: #303030; color: #f4f4f5; }
-.nexus-card { border: 1px solid #3f3f46; border-radius: 20px; background: #262626; padding: 22px; }
-.nexus-input { width: 100%; border: 1px solid #52525b; background: #202020; border-radius: 10px; padding: 10px 12px; color: #fafafa; }
-.nexus-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #52525b; border-radius: 12px; background: #303030; padding: 10px 14px; font-size: 13px; }
+.nexus-composer .flex.items-end > button:last-child { margin-left: auto; background: #181818; color: #ffffff; }
+.nexus-chat .rounded-br-sm { border-radius: 24px; background: #f4f4f4; color: #18181b; }
+.nexus-card { border: 1px solid #e5e5e5; border-radius: 20px; background: #ffffff; padding: 22px; }
+.nexus-input { width: 100%; border: 1px solid #dedede; background: #ffffff; border-radius: 10px; padding: 10px 12px; color: #18181b; }
+.nexus-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #dedede; border-radius: 12px; background: #f4f4f4; padding: 10px 14px; font-size: 13px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button:focus-visible, select:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 2px; }
 @media (max-width: 767px) {

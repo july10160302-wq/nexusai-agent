@@ -96,7 +96,7 @@ export default function App() {
   }
 
   return (
-    <div className="nexus-app flex w-full overflow-hidden text-zinc-100">
+    <div className="nexus-app flex w-full overflow-hidden text-zinc-900">
       {/* mobile backdrop */}
       {drawerOpen && (
         <div
@@ -107,12 +107,12 @@ export default function App() {
 
       {/* sidebar — 移动端为抽屉 */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-60 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 shrink-0 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 md:static md:translate-x-0 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center gap-2.5 px-4 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900">
             <Bot className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -121,7 +121,7 @@ export default function App() {
           </div>
           <button
             aria-label={t('关闭侧栏', 'Close sidebar')}
-            className="ml-auto text-zinc-500 hover:text-zinc-300 md:hidden"
+            className="ml-auto text-zinc-500 hover:text-zinc-700 md:hidden"
             onClick={() => setDrawerOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -138,8 +138,8 @@ export default function App() {
                 onClick={() => goTab(n.id)}
                 className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition ${
                   on
-                    ? 'bg-zinc-800 text-zinc-100'
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                    ? 'bg-zinc-100 text-zinc-900'
+                    : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-800'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -154,7 +154,7 @@ export default function App() {
             <div className="px-3 pb-1 pt-4">
               <button
                 onClick={() => createConversation()}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-zinc-700 px-3 py-2 text-sm text-zinc-400 transition hover:border-indigo-600 hover:text-indigo-300"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-zinc-200 px-3 py-2 text-sm text-zinc-600 transition hover:border-zinc-400 hover:text-zinc-700"
               >
                 <Plus className="h-4 w-4" />{t("新建对话")}</button>
             </div>
@@ -164,8 +164,8 @@ export default function App() {
                   key={c.id}
                   className={`group flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-[13px] transition ${
                     c.id === activeId
-                      ? 'bg-zinc-800 text-zinc-100'
-                      : 'text-zinc-400 hover:bg-zinc-900'
+                      ? 'bg-zinc-100 text-zinc-900'
+                      : 'text-zinc-600 hover:bg-zinc-50'
                   }`}
                   onClick={() => {
                     setActiveId(c.id);
@@ -178,32 +178,32 @@ export default function App() {
                       e.stopPropagation();
                       deleteConversation(c.id);
                     }}
-                    className="shrink-0 text-zinc-600 hover:text-red-400 md:hidden md:group-hover:block"
+                    className="shrink-0 text-zinc-500 hover:text-red-700 md:hidden md:group-hover:block"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
               {conversations.length === 0 && (
-                <p className="px-3 py-2 text-xs text-zinc-600">{t("暂无历史对话")}</p>
+                <p className="px-3 py-2 text-xs text-zinc-500">{t("暂无历史对话")}</p>
               )}
             </div>
           </>
         )}
 
-        <div className="mt-auto border-t border-zinc-800 px-4 py-3 text-[11px] text-zinc-500">{t('历史保存在本机 · 请求发送至配置的 API', 'History on device · Requests go to your API')}
-          <select aria-label="Language" value={settings.locale} onChange={e=>setSettings(s=>({...s,locale:e.target.value as 'zh'|'en'}))} className="mt-3 block w-full rounded-lg bg-zinc-800 p-2 text-xs text-zinc-200"><option value="zh">简体中文</option><option value="en">English</option></select>
+        <div className="mt-auto border-t border-zinc-200 px-4 py-3 text-[11px] text-zinc-500">{t('历史保存在本机 · 请求发送至配置的 API', 'History on device · Requests go to your API')}
+          <select aria-label="Language" value={settings.locale} onChange={e=>setSettings(s=>({...s,locale:e.target.value as 'zh'|'en'}))} className="mt-3 block w-full rounded-lg bg-zinc-100 p-2 text-xs text-zinc-800"><option value="zh">简体中文</option><option value="en">English</option></select>
         </div>
       </aside>
 
       {/* main */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* mobile top bar */}
-        <div className="flex h-11 shrink-0 items-center gap-2 border-b border-zinc-800 px-3 md:hidden">
+        <div className="flex h-11 shrink-0 items-center gap-2 border-b border-zinc-200 px-3 md:hidden">
           <button
             aria-label={t('打开侧栏', 'Open sidebar')}
             onClick={() => setDrawerOpen(true)}
-            className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800"
+            className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-100"
           >
             <Menu className="h-5 w-5" />
           </button>

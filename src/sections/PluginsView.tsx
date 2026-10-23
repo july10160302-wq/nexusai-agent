@@ -64,9 +64,9 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
     <div className="h-full overflow-y-auto px-6 py-5">
       <div className="mx-auto max-w-4xl">
         <div className="mb-5 flex items-center gap-3">
-          <PackageCheck className="h-5 w-5 text-indigo-400" />
+          <PackageCheck className="h-5 w-5 text-zinc-700" />
           <div>
-            <h1 className="text-lg font-semibold text-zinc-100">{t("插件中心")}</h1>
+            <h1 className="text-lg font-semibold text-zinc-900">{t("插件中心")}</h1>
             <p className="text-sm text-zinc-500">{t("全部插件已预装并配置好，开关即可控制大模型能否调用")}</p>
           </div>
         </div>
@@ -80,24 +80,24 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                 key={p.id}
                 className={`rounded-2xl border p-5 transition ${
                   state?.enabled
-                    ? 'border-zinc-700 bg-zinc-900'
-                    : 'border-zinc-800 bg-zinc-900/40 opacity-70'
+                    ? 'border-zinc-200 bg-zinc-50'
+                    : 'border-zinc-200 bg-zinc-50/40 opacity-70'
                 }`}
               >
                 <div className="mb-3 flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/15">
-                    <Icon className="h-5 w-5 text-indigo-400" />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900/15">
+                    <Icon className="h-5 w-5 text-zinc-700" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="whitespace-nowrap font-medium text-zinc-100">{t(p.name)}</span>
+                      <span className="whitespace-nowrap font-medium text-zinc-900">{t(p.name)}</span>
                       <Badge
                         variant="secondary"
-                        className="bg-zinc-800 font-mono text-[10px] text-zinc-400"
+                        className="bg-zinc-100 font-mono text-[10px] text-zinc-600"
                       >
                         v{p.version}
                       </Badge>
-                      <Badge className="bg-emerald-900/50 text-[10px] text-emerald-300 hover:bg-emerald-900/50">{t("已预装")}</Badge>
+                      <Badge className="bg-emerald-50 text-[10px] text-emerald-700 hover:bg-emerald-50">{t("已预装")}</Badge>
                     </div>
                     <div className="mt-0.5 text-xs text-zinc-500">{t(p.tagline, COPY[p.id]?.[0])}</div>
                   </div>
@@ -107,15 +107,15 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                   />
                 </div>
 
-                <p className="mb-3 text-[13px] leading-relaxed text-zinc-400">{t(p.description, COPY[p.id]?.[1])}</p>
-                <p className="mb-3 text-xs text-amber-300">{t(REQUIREMENTS[p.id]?.[0] || '内置能力', REQUIREMENTS[p.id]?.[1] || 'Built-in capability')}</p>
+                <p className="mb-3 text-[13px] leading-relaxed text-zinc-600">{t(p.description, COPY[p.id]?.[1])}</p>
+                <p className="mb-3 text-xs text-amber-700">{t(REQUIREMENTS[p.id]?.[0] || '内置能力', REQUIREMENTS[p.id]?.[1] || 'Built-in capability')}</p>
 
                 <div className="mb-1 flex flex-wrap gap-1.5">
                   {p.tools.map((t) => (
                     <span
                       key={t.name}
                       title={t.description}
-                      className="cursor-help rounded-md bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-zinc-300"
+                      className="cursor-help rounded-md bg-zinc-100 px-2 py-0.5 font-mono text-[11px] text-zinc-700"
                     >
                       {t.name}
                     </span>
@@ -123,7 +123,7 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                 </div>
 
                 {state?.enabled && p.configFields?.length ? (
-                  <div className="mt-3 space-y-2 border-t border-zinc-800 pt-3">
+                  <div className="mt-3 space-y-2 border-t border-zinc-200 pt-3">
                     {p.configFields.map((f) => (
                       <div key={f.key}>
                         <Label className="mb-1 block text-xs text-zinc-500">{f.label}</Label>
@@ -131,7 +131,7 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
                           value={state.config[f.key] ?? f.defaultValue ?? ''}
                           placeholder={f.placeholder}
                           onChange={(e) => setConfig(p.id, f.key, e.target.value)}
-                          className="h-8 border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-200"
+                          className="h-8 border-zinc-200 bg-white font-mono text-xs text-zinc-800"
                         />
                       </div>
                     ))}

@@ -6,7 +6,7 @@ It is an independent API client, not an official ChatGPT app or a copy of its pr
 ## Included
 
 - Chinese/English interface switching; chat history and active conversation stay on device.
-- A mobile composer, safe-area support, and a desktop sidebar with a mobile drawer.
+- A white interface with a light-gray sidebar and composer, safe-area support, and a desktop sidebar with a mobile drawer. The model picker accepts custom model IDs, including `gpt-6.1-sol`.
 - Chat mode sends no tool schemas and skips MCP initialization. Agent mode enables configured tools and approvals.
 - Streaming handles `[DONE]`, JSON fallback, final events without a newline, provider errors and cancellation. Requests have a configurable timeout and show phase and elapsed time.
 - Connection testing performs a real, potentially billable model request. Model discovery uses `/models` and does not run inference.
