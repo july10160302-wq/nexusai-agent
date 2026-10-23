@@ -1,5 +1,7 @@
 # NexusAI 0.2 preview / v2 预览
 
+Preview 2 reorganizes the sidebar, adds history search and sidebar collapse, consolidates the header, moves model and reasoning controls into the composer, groups attachments and agent mode in the plus menu, and simplifies empty and message views. These controls update settings without making an inference request.
+
 This preview shares one responsive React client across web, Electron and Android.
 It is an independent API client, not an official ChatGPT app or a copy of its private tools.
 

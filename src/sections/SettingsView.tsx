@@ -170,7 +170,7 @@ export default function SettingsView({
               placeholder="sk-..."
               className="border-zinc-200 bg-white font-mono text-sm text-zinc-900"
             />
-            <p className="mt-1 text-[11px] text-zinc-500">{t("密钥只保存在本机浏览器 localStorage，不会上传到任何服务器")}</p>
+            <p className="mt-1 text-[11px] text-zinc-500">{t('密钥保存在本机，并发送至你配置的 API 提供商。','The key is stored on this device and sent to your configured API provider.')}</p>
           </div>
           <div>
             <Label className="mb-1.5 block text-sm text-zinc-700">{t("模型名称")}</Label>

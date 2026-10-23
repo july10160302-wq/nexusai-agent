@@ -4,9 +4,13 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
   Activity,
+  PanelLeft,
+  MoreHorizontal,
+  SlidersHorizontal,
+  SquarePen,
+  Plus,
   ArrowUp,
   AtSign,
-  Bot,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -33,7 +37,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import type {
   AppSettings,
   Assistant,
@@ -347,14 +350,9 @@ interface ChatViewProps {
   assistant: Assistant | null;
   onUpdateAssistant: (id: string, patch: Partial<Assistant>) => void;
   goSettings: () => void;
+  onToggleSidebar: () => void;
+  onNewChat: () => void;
 }
-
-const QUICK_PROMPTS = [
-  '帮我搜一下最近两天的 AI 行业新闻并总结',
-  '先制定一个计划，然后读取工作区根目录看看有什么文件',
-  '用代码执行算一下 100 以内的所有素数',
-  '记住我喜欢简洁的回答风格，然后告诉我现在几点',
-];
 
 export default function ChatView({
   conversation,
@@ -366,9 +364,15 @@ export default function ChatView({
   assistant,
   onUpdateAssistant,
   goSettings,
+  onToggleSidebar,
+  onNewChat,
 }: ChatViewProps) {
  const t = useT();
   const [input, setInput] = useState('');
+  const [showModelPicker, setShowModelPicker] = useState(false);
+  const [showReasoningPicker, setShowReasoningPicker] = useState(false);
+  const [showHeaderMenu, setShowHeaderMenu] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [running, setRunning] = useState(false);
   const [phase, setPhase] = useState('');
@@ -397,15 +401,28 @@ export default function ChatView({
   const [showActivity, setShowActivity] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
+  const runningConversationRef = useRef<string | null>(null);
   const approvalResolvers = useRef(new Map<string, (ok: boolean) => void>());
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const field = inputRef.current;
+    if (field) { field.style.height = 'auto'; field.style.height = Math.min(160, field.scrollHeight) + 'px'; }
+  }, [input]);
   const recRef = useRef<{ stop: () => void } | null>(null);
   useEffect(() => () => {
     abortRef.current?.abort();
     approvalResolvers.current.forEach(resolve => resolve(false));
     approvalResolvers.current.clear();
   }, []);
+  useEffect(() => {
+    if (runningConversationRef.current && runningConversationRef.current !== conversation?.id) {
+      abortRef.current?.abort();
+      approvalResolvers.current.forEach(resolve => resolve(false));
+      approvalResolvers.current.clear();
+    }
+  }, [conversation?.id]);
   const msgEls = useRef(new Map<string, HTMLDivElement>());
 
   const messages = conversation?.messages ?? [];
@@ -668,6 +685,7 @@ export default function ChatView({
   }
 
   async function runAgent(convId: string, history: ChatMessage[], pluginFilter?: string[]) {
+    runningConversationRef.current = convId;
     setRunning(true);
     setElapsed(0);
     setPhase(t('连接中'));
@@ -686,6 +704,7 @@ export default function ChatView({
           : [...c.messages, { id: uid(), role: 'assistant', content: msg, timestamp: Date.now() }],
       }));
     } finally {
+      runningConversationRef.current = null;
       setRunning(false);
       setPhase('');
       abortRef.current = null;
@@ -947,94 +966,23 @@ export default function ChatView({
   const doneCount = plan.filter((p) => p.done).length;
 
   return (
-    <div className="nexus-chat relative flex h-full min-h-0 flex-col">
-      {/* header */}
-      <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-3 text-xs">
-        <div className="flex rounded-full bg-zinc-100 p-1" role="group" aria-label="Chat mode">
-          {(['chat','agent'] as const).map(mode => <button key={mode} disabled={running} onClick={()=>setSettings(s=>({...s,chatMode:mode}))} className={`rounded-full px-4 py-1.5 transition ${settings.chatMode === mode ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-600'}`}>{t(mode === 'chat' ? '聊天' : '智能体')}</button>)}
+    <div className={'nexus-chat relative flex h-full min-h-0 flex-col' + (messages.length ? '' : ' is-empty')}>
+      <div className="nexus-chat-header relative flex h-16 shrink-0 items-center gap-2 px-4">
+        <button className="nexus-icon-button" onClick={onToggleSidebar} aria-label={t('打开侧栏','Open sidebar')}><PanelLeft size={20}/></button>
+        <span className="px-2 text-lg font-semibold tracking-tight">NexusAI</span>
+        <div className="ml-auto flex items-center gap-1">
+          <button className="nexus-icon-button" onClick={onNewChat} disabled={running} aria-label={t('新建对话')}><SquarePen size={20}/></button>
+          <button className="nexus-icon-button" aria-label={t('对话选项','Chat options')} aria-expanded={showHeaderMenu} onClick={()=>setShowHeaderMenu(v=>!v)}><MoreHorizontal size={21}/></button>
         </div>
-        <span role="status" className="min-w-0 truncate text-zinc-600">{running ? phase + ' · ' + elapsed.toFixed(1) + 's' : settings.chatMode === 'chat' ? t('直接对话，不加载工具', 'Direct chat · Tools off') : t('工具与审批已启用', 'Tools & approvals enabled')}</span>
-      </div>
-      <div className="relative flex items-center gap-2 border-b border-zinc-200 px-3 py-3 sm:px-5">
-        {assistant ? (
-          <span className="text-base" title={assistant.name}>
-            {assistant.emoji}
-          </span>
-        ) : (
-          <Bot className="h-4 w-4 text-zinc-700" />
-        )}
-        <span className="min-w-0 truncate whitespace-nowrap text-sm font-medium text-zinc-800">
-          {conversation?.title || t('新对话')}
-        </span>
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <input
-            aria-label={t('模型名称')}
-            list="nexus-model-options"
-            value={effModel}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (assistant?.model) onUpdateAssistant(assistant.id, { model: v });
-              else setSettings((s) => ({ ...s, model: v }));
-            }}
-            className="max-w-28 truncate rounded-md border border-zinc-200 bg-zinc-100 px-2 py-1 text-xs text-zinc-700 outline-none sm:max-w-44"
-            title={t("快速切换模型")}
-          />
-          <datalist id="nexus-model-options">
-            {modelOptions.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </datalist>
-
-          {conversation && conversation.messages.length > 0 && (
-            <button
-              onClick={() => {
-                setSearchOpen(!searchOpen);
-                if (searchOpen) setSearchQuery('');
-              }}
-              className="rounded-md border border-zinc-200 bg-zinc-100 p-1.5 text-zinc-700 hover:bg-zinc-200"
-              title={t("搜索对话内容")}
-            >
-              <Search className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          {conversation && (
-            <button
-              onClick={() => setShowActivity(true)}
-              className="rounded-md border border-zinc-200 bg-zinc-100 p-1.5 text-zinc-700 hover:bg-zinc-200"
-              title={t("活动日志")}
-            >
-              <Activity className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          {conversation && (
-            <button
-              onClick={() => setShowPluginPicker(!showPluginPicker)}
-              className="rounded-md border border-zinc-200 bg-zinc-100 p-1.5 text-zinc-700 hover:bg-zinc-200"
-              title={t("选择本对话可用的插件")}
-            >
-              <Puzzle className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          <Badge variant="secondary" className="hidden bg-zinc-100 text-zinc-700 sm:inline-flex">
-            {enabledCount}{t("插件")}</Badge>
-          {conversation && conversation.messages.length > 0 && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-7 w-7 text-zinc-600 hover:text-zinc-800"
-              title={t("导出为 Markdown")}
-              onClick={exportMarkdown}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
+        {showHeaderMenu && <>
+          <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭菜单','Close menu')} onClick={()=>setShowHeaderMenu(false)}/>
+          <div className="nexus-popover absolute right-4 top-14 z-20 w-56 p-2">
+            <button className="nexus-menu-item" disabled={!messages.length} onClick={()=>{setSearchOpen(v=>!v);setShowHeaderMenu(false)}}><Search size={16}/>{t('搜索对话内容')}</button>
+            <button className="nexus-menu-item" onClick={()=>{setShowActivity(true);setShowHeaderMenu(false)}}><Activity size={16}/>{t('活动日志')}</button>
+            <button className="nexus-menu-item" onClick={()=>{if(!conversation)onCreate();setShowPluginPicker(true);setShowHeaderMenu(false)}}><Puzzle size={16}/>{t('本对话可用插件')}<span className="ml-auto text-xs text-zinc-400">{enabledCount}</span></button>
+            <button className="nexus-menu-item" disabled={!messages.length} onClick={()=>{exportMarkdown();setShowHeaderMenu(false)}}><Download size={16}/>{t('导出为 Markdown')}</button>
+          </div>
+        </>}
         {/* plugin picker dropdown */}
         {showPluginPicker && conversation && (
           <>
@@ -1109,7 +1057,7 @@ export default function ChatView({
       )}
 
       {/* messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+      <div ref={scrollRef} className="nexus-messages min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8">
         {!apiReady && (
           <div className="mx-auto mb-4 flex max-w-xl items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-50 px-4 py-3 text-sm text-amber-200">
             <KeyRound className="h-4 w-4 shrink-0" />
@@ -1124,29 +1072,9 @@ export default function ChatView({
         )}
 
         {messages.length === 0 ? (
-          <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-900/20 text-3xl">
-              {assistant?.emoji ?? <Bot className="h-7 w-7 text-zinc-700" />}
-            </div>
-            <h2 className="mb-1 text-xl font-semibold text-zinc-900">
-              {t('今天想做些什么？')}
-            </h2>
-            <p className="mb-6 text-sm text-zinc-500">{t("工作区文件 · 工具审批 · 任务计划 · 代码执行 · MCP 生态")}</p>
-            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-              {QUICK_PROMPTS.map((q) => (
-                <button
-                  key={t(q)}
-                  onClick={() => send(t(q))}
-                  className="rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-left text-[13px] text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50"
-                >
-                  {t(q)}
-                </button>
-              ))}
-            </div>
-            <p className="mt-4 text-[11px] text-zinc-500">{t("输入 / 呼出快捷命令 · 点击 @ 引用工作区文件 · 支持语音输入")}</p>
-          </div>
+          <div className="nexus-welcome mx-auto max-w-3xl text-center"><h1 className="text-[28px] font-semibold tracking-tight sm:text-[32px]">{t('今天想做些什么？')}</h1></div>
         ) : (
-          <div className="mx-auto max-w-3xl space-y-5">
+          <div className="mx-auto max-w-3xl space-y-8 pb-6">
             {visibleMessages.map((m) => (
               <div
                 key={m.id}
@@ -1207,10 +1135,7 @@ export default function ChatView({
                   </div>
                 ) : (
                   <div className="group flex gap-3">
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-sm">
-                      {assistant?.emoji ?? <Bot className="h-4 w-4 text-zinc-700" />}
-                    </div>
-                    <div className="min-w-0 flex-1 text-sm text-zinc-800">
+                    <div className="nexus-assistant-message min-w-0 flex-1 text-[15px] leading-7 text-zinc-800">
                       {m.toolCalls?.map((tc) => (
                         <ToolCallCard key={tc.id} tc={tc} onResolve={resolveApproval} />
                       ))}
@@ -1376,38 +1301,46 @@ export default function ChatView({
 
           <div className="flex items-end gap-1.5 sm:gap-2">
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPickImage} />
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800"
-              title={t("添加图片（需要视觉模型）")}
-              onClick={() => fileRef.current?.click()}
-            >
-              <ImagePlus className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className="h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800"
-              title={t("引用工作区文件")}
-              onClick={openMention}
-            >
-              <AtSign className="h-4 w-4" />
-            </Button>
-            {VOICE_SUPPORTED && (
-              <Button
-                size="icon"
-                variant="outline"
-                className={`h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 hover:bg-zinc-100 ${
-                  recording ? 'animate-pulse text-red-700' : 'text-zinc-600 hover:text-zinc-800'
-                }`}
-                title={t(recording ? '停止语音输入' : '语音输入')}
-                onClick={toggleVoice}
-              >
-                <Mic className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="relative">
+              <button className="nexus-icon-button" aria-label={t('添加附件与工具','Add attachments & tools')} aria-expanded={showAttachMenu} onClick={()=>setShowAttachMenu(v=>!v)}><Plus size={22}/></button>
+              {showAttachMenu && <>
+                <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭菜单','Close menu')} onClick={()=>setShowAttachMenu(false)}/>
+                <div className="nexus-popover absolute bottom-full left-0 z-20 mb-3 w-60 p-2">
+                  <button className="nexus-menu-item" onClick={()=>{setShowAttachMenu(false);fileRef.current?.click()}}><ImagePlus size={17}/>{t('添加图片','Attach image')}</button>
+                  <button className="nexus-menu-item" onClick={()=>{setShowAttachMenu(false);void openMention()}}><AtSign size={17}/>{t('引用工作区文件')}</button>
+                  <button className="nexus-menu-item" onClick={()=>{setShowAttachMenu(false);if(!conversation)onCreate();setShowPluginPicker(true)}}><Puzzle size={17}/>{t('本对话可用插件')}</button>
+            <div className="flex items-center justify-between gap-2 border-t border-zinc-100 px-3 py-3 text-sm text-zinc-600"><Wrench size={14}/><select aria-label={t('对话模式','Chat mode')} value={settings.chatMode} disabled={running} className="max-w-24 bg-transparent outline-none" onChange={e=>setSettings(v=>({...v,chatMode:e.target.value as 'chat'|'agent'}))}><option value="chat">{t('聊天')}</option><option value="agent">{t('智能体')}</option></select></div>
+                </div>
+              </>}
+            </div>
+        <div className="relative">
+          <button className="nexus-composer-control" disabled={running} aria-label={t('选择模型','Choose model')} aria-expanded={showModelPicker} onClick={()=>setShowModelPicker(v=>!v)} title={effModel}><span className="max-w-[105px] truncate">{effModel}</span><ChevronDown size={16} className="text-zinc-400"/></button>
+          {showModelPicker && <>
+            <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭模型菜单','Close model menu')} onClick={()=>setShowModelPicker(false)}/>
+            <div className="nexus-model-popover nexus-popover absolute left-0 bottom-full z-20 mb-3 w-72 space-y-3 p-4">
+              <label className="block text-xs font-medium text-zinc-500">{t('模型名称')}<input autoFocus aria-label={t('模型名称')} className="nexus-input mt-2 text-sm" list="nexus-model-options" value={effModel} disabled={running} onChange={e=>{if(assistant?.model)onUpdateAssistant(assistant.id,{model:e.target.value});else setSettings(v=>({...v,model:e.target.value}))}}/></label>
+              <datalist id="nexus-model-options">{modelOptions.map(m=><option key={m} value={m}/>)}</datalist>
+              <div className="max-h-48 overflow-y-auto">{modelOptions.map(m=><button key={m} disabled={running} className="nexus-menu-item" onClick={()=>{if(assistant?.model)onUpdateAssistant(assistant.id,{model:m});else setSettings(v=>({...v,model:m}));setShowModelPicker(false)}}><span className="min-w-0 flex-1 truncate">{m}</span>{m===effModel&&<Check size={16}/>}</button>)}</div>
+              <button className="w-full border-t border-zinc-100 pt-3 text-left text-xs text-zinc-500" onClick={goSettings}>{t('管理 API 与模型','Manage API & models')}</button>
+            </div>
+          </>}
+        </div>
+            <div className="relative">
+              <button className="nexus-composer-control" disabled={running} aria-label={t('推理强度','Reasoning effort')} aria-expanded={showReasoningPicker} onClick={()=>{setShowReasoningPicker(v=>!v);setShowModelPicker(false)}}><SlidersHorizontal size={15}/><span>{settings.reasoningEffort==='off' ? t('思考','Think') : t(({off:'默认',minimal:'极简',low:'低',medium:'中',high:'高'})[settings.reasoningEffort])}</span><ChevronDown size={12}/></button>
+              {showReasoningPicker && <>
+                <button className="fixed inset-0 z-10 cursor-default" aria-label={t('关闭强度菜单','Close effort menu')} onClick={()=>setShowReasoningPicker(false)}/>
+                <div className="nexus-popover absolute bottom-full right-0 z-20 mb-3 w-56 p-2" role="menu" aria-label={t('推理强度','Reasoning effort')}>
+                  <p className="px-3 py-2 text-xs text-zinc-400">{t('推理强度 · 仅限支持的模型','Reasoning effort · Supported models only')}</p>
+                  {([['off','默认','Default'],['minimal','极简','Minimal'],['low','低','Low'],['medium','中','Medium'],['high','高','High']] as const).map(([value,zh,en])=><button key={value} className="nexus-menu-item" role="menuitemradio" aria-checked={settings.reasoningEffort===value} onClick={()=>{setSettings(v=>({...v,reasoningEffort:value}));setShowReasoningPicker(false)}}><span className="flex-1">{t(zh,en)}</span>{settings.reasoningEffort===value&&<Check size={15}/>}</button>)}
+                </div>
+              </>}
+            </div>
+
+            <div className="flex-1"/>
             <Textarea
+              ref={inputRef}
+              aria-label={t('消息','Message')}
+              enterKeyHint="send"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -1424,10 +1357,23 @@ export default function ChatView({
                   send();
                 }
               }}
-              placeholder={t(recording ? '正在聆听…' : '输入消息，/ 快捷命令，Enter 发送…')}
+              placeholder={recording ? t('正在聆听…') : t('向 NexusAI 提问','Message NexusAI')}
               className="max-h-40 min-h-[44px] flex-1 resize-none border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:ring-zinc-400"
               rows={1}
             />
+            {VOICE_SUPPORTED && (
+              <Button
+                size="icon"
+                variant="outline"
+                className={`h-11 w-11 shrink-0 border-zinc-200 bg-zinc-50 hover:bg-zinc-100 ${
+                  recording ? 'animate-pulse text-red-700' : 'text-zinc-600 hover:text-zinc-800'
+                }`}
+                title={t(recording ? '停止语音输入' : '语音输入')}
+                onClick={toggleVoice}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
             {running ? (
               <Button
                 size="icon"
@@ -1450,11 +1396,8 @@ export default function ChatView({
               </Button>
             )}
           </div>
-          <p className="mt-2 text-center text-[11px] text-zinc-500">
-            {lastUsage
-              ? `↑${lastUsage.prompt} ↓${lastUsage.completion} tokens · `
-              : ''}{t("工具调用在本地执行 · 写操作需批准后执行")}</p>
         </div>
+        <p role="status" className="mx-auto mt-3 max-w-3xl text-center text-[11px] text-zinc-400">{running ? phase+' · '+elapsed.toFixed(1)+'s' : t('重要结果请核实，工具操作请先审阅。','Verify important results and review tool actions.')}{lastUsage && !running ? ' · ↑'+lastUsage.prompt+' ↓'+lastUsage.completion : ''}</p>
       </div>
 
       {/* activity drawer */}

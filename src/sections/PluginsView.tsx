@@ -67,7 +67,7 @@ export default function PluginsView({ pluginStates, setPluginStates }: PluginsVi
           <PackageCheck className="h-5 w-5 text-zinc-700" />
           <div>
             <h1 className="text-lg font-semibold text-zinc-900">{t("插件中心")}</h1>
-            <p className="text-sm text-zinc-500">{t("全部插件已预装并配置好，开关即可控制大模型能否调用")}</p>
+            <p className="text-sm text-zinc-500">{t('内置工具与可选连接，可用性取决于设备授权和服务状态。','Built-in tools and optional integrations depend on device permissions and service availability.')}</p>
           </div>
         </div>
 
